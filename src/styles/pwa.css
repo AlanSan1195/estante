@@ -1,0 +1,413 @@
+/*
+ * PWA: hoja de instalación, aviso del lector, banner de versión nueva, nube de descarga del estante
+ * y página sin conexión. Usa las variables de vidrio del estante (app.css) o del lector (themes.css),
+ * con valores de respaldo por si una página no carga ninguno de los dos.
+ */
+
+.pwa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+
+.pwa-install {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 12px;
+  color: var(--glass-ink, var(--app-ink));
+}
+
+.pwa-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent, #0a7aff);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.pwa-primary:active {
+  transform: scale(0.97);
+}
+
+.pwa-primary svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pwa-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pwa-step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  grid-template-areas:
+    "n art"
+    "n text";
+  column-gap: 12px;
+  row-gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgb(127 127 127 / 0.1);
+}
+
+.pwa-step-n {
+  grid-area: n;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent, #0a7aff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pwa-step-art {
+  grid-area: art;
+}
+
+.pwa-step p {
+  grid-area: text;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.pwa-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  opacity: 0.72;
+}
+
+/* Ilustraciones: maquetas mínimas de Safari, del menú y de la pantalla de inicio. */
+.pwa-art-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 8px 0 14px;
+  border-radius: 999px;
+  background: rgb(127 127 127 / 0.16);
+}
+
+.pwa-art-url {
+  flex: 1;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.pwa-art-pulse,
+.pwa-art-more {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.pwa-art-pulse {
+  color: var(--accent, #0a7aff);
+  background: rgb(10 122 255 / 0.14);
+  animation: pwa-pulse 1.8s var(--ease-out) infinite;
+}
+
+.pwa-art-kebab {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pwa-art-pulse svg,
+.pwa-art-more svg {
+  width: 19px;
+  height: 19px;
+}
+
+@keyframes pwa-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(10 122 255 / 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px rgb(10 122 255 / 0);
+  }
+}
+
+.pwa-art-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: rgb(127 127 127 / 0.16);
+  font-size: 15px;
+  font-weight: 560;
+}
+
+.pwa-art-row svg {
+  width: 22px;
+  height: 22px;
+}
+
+.pwa-art-home {
+  display: inline-grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.pwa-art-home img {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.25);
+}
+
+/* Aviso discreto en el lector (Safari iOS sin instalar). */
+.pwa-hint {
+  position: fixed;
+  z-index: 75;
+  left: 50%;
+  top: calc(var(--safe-top) + 12px);
+  transform: translateX(-50%);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: pwa-drop 0.45s var(--ease-spring);
+}
+
+@keyframes pwa-drop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+}
+
+/* "Hay una versión nueva · Actualizar". */
+.pwa-update {
+  position: fixed;
+  z-index: 78;
+  left: 50%;
+  bottom: calc(var(--safe-bottom) + 96px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: pwa-rise 0.45s var(--ease-spring);
+}
+
+.pwa-update.is-reader {
+  bottom: calc(var(--safe-bottom) + 64px);
+}
+
+.pwa-update button {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent, #0a7aff);
+  color: #fff;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+@keyframes pwa-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px);
+  }
+}
+
+/* Nube del estante: vacía, descargando (anillo de progreso), lista o con versión nueva. */
+.shelf-cloud {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft, currentColor);
+  cursor: pointer;
+}
+
+.shelf-cloud svg {
+  width: 23px;
+  height: 23px;
+}
+
+.shelf-cloud:active {
+  background: var(--hairline, rgb(127 127 127 / 0.15));
+}
+
+.shelf-cloud.is-ready {
+  color: var(--ink-soft, currentColor);
+  cursor: default;
+}
+
+.shelf-cloud.is-stale {
+  color: var(--accent, #0a7aff);
+}
+
+.shelf-cloud.is-stale::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent, #0a7aff);
+}
+
+.shelf-cloud-ring {
+  position: absolute;
+  inset: 1px 3px;
+  width: auto;
+  height: auto;
+}
+
+.shelf-cloud-ring circle {
+  fill: none;
+  stroke-width: 2.4;
+}
+
+.shelf-cloud-ring .track {
+  stroke: var(--hairline, rgb(127 127 127 / 0.2));
+}
+
+.shelf-cloud-ring .bar {
+  stroke: var(--accent, #0a7aff);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s var(--ease-out);
+}
+
+.shelf-cloud.is-downloading svg:not(.shelf-cloud-ring) {
+  width: 14px;
+  height: 14px;
+  color: var(--accent, #0a7aff);
+}
+
+/* Fila "Instalar" del Inicio. */
+.home-install {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 34px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--card-bg, rgb(127 127 127 / 0.1));
+  color: var(--ink, inherit);
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-install img {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  flex: none;
+}
+
+.home-install strong {
+  display: block;
+  font-size: 16px;
+}
+
+.home-install span {
+  font-size: 14px;
+  color: var(--ink-soft, inherit);
+}
+
+/* Página sin conexión. */
+.offline-page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 24px) 28px calc(var(--safe-bottom) + 24px);
+  text-align: center;
+}
+
+.offline-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 360px;
+}
+
+.offline-icon {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 26px;
+  background: var(--card-bg, rgb(127 127 127 / 0.12));
+  color: var(--ink-soft, currentColor);
+}
+
+.offline-icon svg {
+  width: 44px;
+  height: 44px;
+}
+
+.offline-card h1 {
+  margin: 6px 0 0;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.offline-card p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft, inherit);
+}
+
+.offline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.offline-secondary {
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card-bg, rgb(127 127 127 / 0.14));
+  color: var(--ink, inherit);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}

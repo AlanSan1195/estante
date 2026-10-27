@@ -1,0 +1,32 @@
+---
+/**
+ * Página que el service worker sirve cuando no hay red ni copia guardada de lo que se pidió (por
+ * ejemplo, abrir sin conexión un libro que no se descargó).
+ */
+import '../styles/app.css';
+import AppLayout from '../layouts/AppLayout.astro';
+import { CloudOffIcon } from '../ui/glass/icons';
+---
+
+<AppLayout title="Sin conexión · Estante">
+  <main class="offline-page" data-page="offline">
+    <div class="offline-card">
+      <span class="offline-icon"><CloudOffIcon /></span>
+      <h1>Sin conexión</h1>
+      <p>
+        Esta página no está guardada en tu dispositivo. Los libros con <strong>✓</strong> en la
+        Biblioteca se pueden leer sin red.
+      </p>
+      <div class="offline-actions">
+        <a class="app-primary-button" href="/biblioteca/">Ir a la Biblioteca</a>
+        <button type="button" class="offline-secondary" data-retry>Reintentar</button>
+      </div>
+    </div>
+  </main>
+</AppLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelector('[data-retry]')?.addEventListener('click', () => window.location.reload());
+  });
+</script>
