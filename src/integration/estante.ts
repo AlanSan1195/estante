@@ -1,8 +1,8 @@
-import { fileURLToPath } from 'node:url';
-import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
-import type { CompileReport } from '../core/application/compileLibrary';
-import { type EstantePaths, resolvePaths, runCompile } from './composition';
-import { writeServiceWorker } from './precache';
+import { fileURLToPath } from "node:url";
+import type { AstroIntegration, AstroIntegrationLogger } from "astro";
+import type { CompileReport } from "../core/application/compileLibrary";
+import { type EstantePaths, resolvePaths, runCompile } from "./composition";
+import { writeServiceWorker } from "./precache";
 
 const WATCHED = /\.(md|jpe?g|png|webp)$/i;
 
@@ -11,8 +11,10 @@ function report(logger: AstroIntegrationLogger, result: CompileReport): void {
   logger.info(
     `${result.catalog.books.length} libro(s) en el estante · ${compiled} compilado(s) · ${result.warnings.length} aviso(s)`,
   );
-  for (const w of result.warnings) logger.warn(`[${w.book ?? 'biblioteca'}] ${w.message}`);
-  if (result.pruned.length > 0) logger.info(`Eliminados: ${result.pruned.join(', ')}`);
+  for (const w of result.warnings)
+    logger.warn(`[${w.book ?? "biblioteca"}] ${w.message}`);
+  if (result.pruned.length > 0)
+    logger.info(`Eliminados: ${result.pruned.join(", ")}`);
 }
 
 /**
@@ -30,7 +32,11 @@ export default function estante(): AstroIntegration {
    */
   const compile = (logger: AstroIntegrationLogger, force: boolean) => {
     queue = queue
-      .then(() => (paths ? runCompile(paths, { force, log: (m) => logger.debug(m) }) : null))
+      .then(() =>
+        paths
+          ? runCompile(paths, { force, log: (m) => logger.debug(m) })
+          : null,
+      )
       .then((result) => result && report(logger, result))
       .catch((error: unknown) =>
         logger.error(`No se pudo compilar la biblioteca: ${String(error)}`),
@@ -39,14 +45,14 @@ export default function estante(): AstroIntegration {
   };
 
   return {
-    name: 'estante',
+    name: "estante",
     hooks: {
-      'astro:config:setup': async ({ config, command, logger }) => {
+      "astro:config:setup": async ({ config, command, logger }) => {
         paths = resolvePaths(fileURLToPath(config.root));
-        if (command === 'preview' || command === 'sync') return;
+        if (command === "preview" || command === "sync") return;
         await compile(logger, true);
       },
-      'astro:server:setup': ({ server, logger }) => {
+      "astro:server:setup": ({ server, logger }) => {
         if (!paths) return;
         const projectsDir = paths.projectsDir;
         server.watcher.add(projectsDir);
@@ -55,18 +61,22 @@ export default function estante(): AstroIntegration {
           if (!file.startsWith(projectsDir) || !WATCHED.test(file)) return;
           clearTimeout(timer);
           timer = setTimeout(async () => {
-            logger.info(`Cambio en ${file.slice(projectsDir.length + 1)}: recompilando…`);
+            logger.info(
+              `Cambio en ${file.slice(projectsDir.length + 1)}: recompilando…`,
+            );
             await compile(logger, false);
-            server.ws.send({ type: 'full-reload', path: '*' });
+            server.ws.send({ type: "full-reload", path: "*" });
           }, 150);
         };
-        server.watcher.on('add', onChange);
-        server.watcher.on('change', onChange);
-        server.watcher.on('unlink', onChange);
+        server.watcher.on("add", onChange);
+        server.watcher.on("change", onChange);
+        server.watcher.on("unlink", onChange);
       },
-      'astro:build:done': async ({ dir, logger }) => {
+      "astro:build:done": async ({ dir, logger }) => {
         const { version, files } = await writeServiceWorker(fileURLToPath(dir));
-        logger.info(`Service worker: shell ${version} con ${files.length} archivos precargados`);
+        logger.info(
+          `Service worker: shell ${version} con ${files.length} archivos precargados`,
+        );
       },
     },
   };
