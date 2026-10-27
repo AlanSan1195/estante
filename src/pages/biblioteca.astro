@@ -1,0 +1,18 @@
+---
+import '../styles/glass.css';
+import '../styles/app.css';
+import AppLayout from '../layouts/AppLayout.astro';
+import { readCatalog } from '../lib/catalog';
+import LibraryGrid from '../ui/library/LibraryGrid';
+
+const catalog = await readCatalog();
+---
+
+<AppLayout title="Biblioteca · Estante" tab="biblioteca">
+  <main class="app-page" data-page="biblioteca">
+    <header class="app-header has-tools">
+      <h1>Biblioteca</h1>
+    </header>
+    <LibraryGrid client:load books={catalog.books} />
+  </main>
+</AppLayout>

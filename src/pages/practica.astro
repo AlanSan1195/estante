@@ -1,0 +1,35 @@
+---
+import '@fontsource-variable/literata/index.css';
+import '../styles/glass.css';
+import '../styles/app.css';
+import AppLayout from '../layouts/AppLayout.astro';
+import { readAllManifests } from '../lib/catalog';
+import PracticeView, { type PracticeQuestionData } from '../ui/practice/PracticeView';
+
+const manifests = await readAllManifests();
+const questions: PracticeQuestionData[] = manifests.flatMap((manifest) =>
+  manifest.questions.map((q) => ({
+    bookSlug: manifest.slug,
+    bookTitle: manifest.title,
+    questionId: q.id,
+    group: q.group,
+    number: q.number,
+    questionHtml: q.questionHtml,
+    answerHtml: q.answerHtml,
+    blockId: q.blockId,
+  })),
+);
+const books = manifests.map((m) => ({ slug: m.slug, title: m.title }));
+---
+
+<AppLayout title="Práctica · Estante" tab="practica">
+  <main class="app-page" data-page="practica">
+    <header class="app-header">
+      <h1>Práctica</h1>
+      <p class="app-subtitle">Responde sin mirar y califícate como en una entrevista real.</p>
+    </header>
+    <PracticeView client:only="react" questions={questions} books={books}>
+      <div slot="fallback" class="practice-card is-loading" aria-hidden="true"></div>
+    </PracticeView>
+  </main>
+</AppLayout>

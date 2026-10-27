@@ -1,0 +1,46 @@
+---
+/**
+ * Barra de pestañas flotante de vidrio (iOS 26): cápsula con Inicio, Biblioteca y Práctica, y un
+ * botón circular aparte para Buscar. Se comparte entre las páginas del estante desde AppLayout.
+ */
+import { HomeIcon, LibraryIcon, PracticeIcon, SearchIcon } from '../ui/glass/icons';
+import type { Tab } from './tabs';
+
+interface Props {
+  active: Tab;
+}
+
+const { active } = Astro.props;
+const tabs = [
+  { id: 'inicio', href: '/', label: 'Inicio', Icon: HomeIcon },
+  { id: 'biblioteca', href: '/biblioteca', label: 'Biblioteca', Icon: LibraryIcon },
+  { id: 'practica', href: '/practica', label: 'Práctica', Icon: PracticeIcon },
+] as const;
+---
+
+<nav class="tabbar" aria-label="Secciones" transition:name="tabbar" transition:animate="none">
+  <div class="tabbar-pill app-glass">
+    {
+      tabs.map(({ id, href, label, Icon }) => (
+        <a
+          href={href}
+          class:list={['tabbar-tab', { 'is-active': active === id }]}
+          aria-current={active === id ? 'page' : undefined}
+          data-tab={id}
+        >
+          <Icon filled={active === id} />
+          <span>{label}</span>
+        </a>
+      ))
+    }
+  </div>
+  <a
+    href="/buscar"
+    class:list={['tabbar-search app-glass', { 'is-active': active === 'buscar' }]}
+    aria-label="Buscar"
+    aria-current={active === 'buscar' ? 'page' : undefined}
+    data-tab="buscar"
+  >
+    <SearchIcon />
+  </a>
+</nav>

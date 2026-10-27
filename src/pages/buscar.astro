@@ -1,0 +1,24 @@
+---
+import '@fontsource-variable/literata/index.css';
+import '../styles/glass.css';
+import '../styles/app.css';
+import AppLayout from '../layouts/AppLayout.astro';
+import { readAllManifests } from '../lib/catalog';
+import GlobalSearch, { type SearchBook } from '../ui/search/GlobalSearch';
+
+const manifests = await readAllManifests();
+const books: SearchBook[] = manifests.map((m) => ({
+  slug: m.slug,
+  title: m.title,
+  chapters: m.chapters.map((c) => ({ id: c.id, title: c.title, label: c.label })),
+}));
+---
+
+<AppLayout title="Buscar · Estante" tab="buscar">
+  <main class="app-page" data-page="buscar">
+    <header class="app-header">
+      <h1>Buscar</h1>
+    </header>
+    <GlobalSearch client:only="react" books={books} />
+  </main>
+</AppLayout>

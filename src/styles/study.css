@@ -1,0 +1,588 @@
+/*
+ * Herramientas de estudio dentro del lector: términos del glosario, respuestas ocultas, subrayados,
+ * marcadores y las hojas/popovers de glosario, búsqueda y anotaciones.
+ * Nada de lo que se pinta dentro del texto cambia la paginación (sin márgenes ni rellenos nuevos).
+ */
+
+/* Al escribir en las hojas (búsqueda, glosario, notas) el navegador no debe poder desplazar el
+   lector para "mostrar" el campo: `clip` recorta como `hidden` pero no crea un área desplazable. */
+.reader {
+  overflow: clip;
+}
+
+/* ------------------------------------------------------------------ en el texto -------- */
+
+.chapter .term {
+  cursor: pointer;
+  border-radius: 0.15em;
+  transition: background-color 0.2s;
+}
+
+.chapter .term:active {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.chapter mark.hl {
+  color: inherit;
+  background: var(--hl, rgb(255 204 0 / 0.38));
+  border-radius: 0.18em;
+  padding: 0;
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.chapter mark.hl[data-note="true"] {
+  text-decoration: underline 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+  text-underline-offset: 0.22em;
+}
+
+mark.hl[data-color="yellow"],
+.rc-note[data-color="yellow"],
+[data-color="yellow"] {
+  --hl: rgb(255 204 0 / 0.4);
+  --hl-solid: #f5c400;
+}
+
+mark.hl[data-color="green"],
+.rc-note[data-color="green"],
+[data-color="green"] {
+  --hl: rgb(52 199 89 / 0.3);
+  --hl-solid: #34c759;
+}
+
+mark.hl[data-color="blue"],
+.rc-note[data-color="blue"],
+[data-color="blue"] {
+  --hl: rgb(10 132 255 / 0.26);
+  --hl-solid: #0a84ff;
+}
+
+mark.hl[data-color="pink"],
+.rc-note[data-color="pink"],
+[data-color="pink"] {
+  --hl: rgb(255 55 135 / 0.26);
+  --hl-solid: #ff3787;
+}
+
+mark.hl[data-color="purple"],
+[data-color="purple"] {
+  --hl: rgb(175 82 222 / 0.26);
+  --hl-solid: #af52de;
+}
+
+.reader[data-mode="dark"] mark.hl[data-color="yellow"] {
+  --hl: rgb(255 214 10 / 0.3);
+}
+
+.reader[data-mode="dark"] mark.hl[data-color="green"] {
+  --hl: rgb(48 209 88 / 0.28);
+}
+
+.reader[data-mode="dark"] mark.hl[data-color="blue"] {
+  --hl: rgb(64 156 255 / 0.32);
+}
+
+.reader[data-mode="dark"] mark.hl[data-color="pink"] {
+  --hl: rgb(255 85 150 / 0.3);
+}
+
+/* Banco de preguntas: respuesta "desenfocada" (sin filter: no crea capas en Safari). */
+.qa {
+  position: relative;
+  cursor: pointer;
+}
+
+.reader[data-hideanswers="true"] .qa:not(.is-revealed) .qa-a {
+  position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.reader[data-hideanswers="true"] .qa:not(.is-revealed) .qa-a * {
+  /* biome-ignore lint/complexity/noImportantStyles: debe ganar a los colores en línea de Shiki */
+  color: transparent !important;
+  text-shadow: 0 0 0.5em color-mix(in srgb, var(--ink) 60%, transparent);
+  text-decoration-color: transparent;
+}
+
+.reader[data-hideanswers="true"] .qa:not(.is-revealed) .qa-a code,
+.reader[data-hideanswers="true"] .qa:not(.is-revealed) .qa-a .ref {
+  background: transparent;
+}
+
+.reader[data-hideanswers="true"] .qa:not(.is-revealed) .qa-a::after {
+  content: "Toca para ver la respuesta";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-ui);
+  font-size: 0.74em;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--tone-pregunta);
+}
+
+.reader[data-hideanswers="true"] .qa.is-revealed .qa-a {
+  animation: qa-reveal 0.35s var(--ease-out);
+}
+
+@keyframes qa-reveal {
+  from {
+    opacity: 0.4;
+  }
+}
+
+/* ------------------------------------------------------------------ cinta del marcador -- */
+
+.rc-layer > .rc-ribbon {
+  position: absolute;
+  top: 0;
+  right: calc(var(--safe-right) + 72px);
+  width: 20px;
+  height: calc(var(--safe-top) + 38px);
+  background: linear-gradient(90deg, #d8333b, #ef4a50 55%, #d8333b);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25));
+  pointer-events: none;
+  transform-origin: top;
+  animation: ribbon-drop 0.42s var(--ease-spring);
+}
+
+@keyframes ribbon-drop {
+  from {
+    transform: scaleY(0.2);
+  }
+}
+
+/* ------------------------------------------------------------------ popover del término -- */
+
+.rc-layer > .rc-popover-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+}
+
+.rc-term {
+  position: absolute;
+  z-index: 25;
+  max-width: 340px;
+  padding: 14px 16px 10px;
+  border-radius: 20px;
+  background: var(--glass-strong);
+  animation: rc-pop 0.32s var(--ease-spring);
+}
+
+.rc-term::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--arrow-x, 50%) - 8px);
+  width: 16px;
+  height: 8px;
+  background: inherit;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.rc-term[data-side="below"]::before {
+  top: -7.5px;
+}
+
+.rc-term[data-side="above"]::before {
+  bottom: -7.5px;
+  transform: rotate(180deg);
+}
+
+.rc-term-kicker {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.rc-term h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.rc-term-aliases {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--glass-ink) 60%, transparent);
+}
+
+.rc-term-def {
+  margin: 8px 0 6px;
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.45;
+}
+
+.rc-term-more {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 0 4px;
+  border: 0;
+  border-top: 0.5px solid color-mix(in srgb, var(--glass-ink) 15%, transparent);
+  background: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ barra de subrayado -- */
+
+.rc-hl-bar {
+  position: absolute;
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  animation: rc-pop 0.3s var(--ease-spring);
+}
+
+.rc-hl-color {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  border-radius: 50%;
+  background: var(--hl-solid);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.rc-hl-color:active {
+  transform: scale(0.88);
+}
+
+.rc-hl-color[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--glass-strong),
+    0 0 0 4px var(--hl-solid);
+}
+
+.rc-hl-sep {
+  width: 1px;
+  height: 22px;
+  background: color-mix(in srgb, var(--glass-ink) 18%, transparent);
+}
+
+.rc-hl-action {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.rc-hl-action svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ------------------------------------------------------------------ menú ---------------- */
+
+.rc-pill-count {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--glass-ink) 70%, transparent);
+}
+
+.rc-menu-row .glass-button {
+  flex: 1;
+}
+
+/* ------------------------------------------------------------------ hojas --------------- */
+
+.rc-search-field {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--glass-ink) 9%, var(--glass-strong));
+}
+
+.rc-search-field svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: color-mix(in srgb, var(--glass-ink) 55%, transparent);
+}
+
+.rc-search-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.rc-empty {
+  margin: 18px 6px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--glass-ink) 60%, transparent);
+  text-align: center;
+}
+
+.rc-inline-icon {
+  display: inline;
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+}
+
+.rc-result-count {
+  margin: 0 6px 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--glass-ink) 55%, transparent);
+}
+
+.rc-result-group h3 {
+  display: grid;
+  margin: 14px 6px 6px;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.rc-result-group h3 small,
+.rc-result small,
+.rc-note-main small {
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--glass-ink) 55%, transparent);
+}
+
+.rc-result-group ul,
+.rc-glossary,
+.rc-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.rc-result,
+.rc-glossary-item,
+.rc-note-main {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-ink) 6%, transparent);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rc-result:active,
+.rc-glossary-item:active,
+.rc-note-main:active {
+  background: color-mix(in srgb, var(--glass-ink) 12%, transparent);
+}
+
+.rc-result > span {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.42;
+}
+
+.sr-hit {
+  color: inherit;
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.rc-glossary-item strong {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.rc-glossary-item small {
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--glass-ink) 60%, transparent);
+}
+
+.rc-glossary-item span {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.42;
+}
+
+.rc-glossary-item em {
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.rc-glossary-item.is-focused {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.rc-tabs {
+  max-width: none;
+  margin: 0 0 12px;
+}
+
+.rc-note {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.rc-note-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-note[data-color] .rc-note-main {
+  border-left: 4px solid var(--hl-solid);
+}
+
+.rc-note-main > span,
+.rc-note-main q {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.42;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rc-note-main q::before,
+.rc-note-main q::after {
+  content: none;
+}
+
+.rc-note-main .rc-note-text {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-style: italic;
+  color: color-mix(in srgb, var(--glass-ink) 75%, transparent);
+}
+
+.rc-note-main em {
+  font-style: normal;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--glass-ink) 50%, transparent);
+}
+
+.rc-note-actions {
+  display: grid;
+  gap: 6px;
+}
+
+.rc-note-delete {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-ink) 6%, transparent);
+  color: color-mix(in srgb, var(--glass-ink) 70%, transparent);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.rc-note-delete svg {
+  width: 19px;
+  height: 19px;
+}
+
+.rc-note-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.rc-note-editor q {
+  display: block;
+  padding: 10px 12px;
+  border-left: 4px solid var(--hl-solid);
+  border-radius: 10px;
+  background: var(--hl);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.42;
+}
+
+.rc-note-editor q::before,
+.rc-note-editor q::after {
+  content: none;
+}
+
+.rc-note-editor textarea {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-ink) 8%, transparent);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  color: inherit;
+  resize: vertical;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.rc-note-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rc-note-buttons button {
+  height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass-ink) 9%, transparent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rc-note-buttons .is-primary {
+  background: var(--accent);
+  color: #fff;
+}
