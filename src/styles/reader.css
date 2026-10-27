@@ -1,0 +1,759 @@
+/*
+ * Lector: superficie del motor (capas, curl, deslizar, desplazamiento) y tipografía del libro.
+ * Las medidas de columna (--page-w, --col-w, --col-h, --col-gap) las fija el motor; la tipografía
+ * (--fs, --lh, --mx, --code-scale, --font-body) sale de las preferencias.
+ */
+
+.reader {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--page-bg);
+  color: var(--ink);
+  --pad-top: calc(var(--safe-top) + 52px);
+  --pad-bottom: calc(var(--safe-bottom) + 46px);
+  --fs: 18px;
+  --lh: 1.55;
+  --mx: 26px;
+  --code-scale: 0.85;
+  --font-body: "Literata Variable", Georgia, serif;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.35s var(--ease-out);
+}
+
+.reader ::selection {
+  background: var(--selection);
+}
+
+/* ------------------------------------------------------------------ superficie --------- */
+
+.rd-surface {
+  position: absolute;
+  inset: 0;
+}
+
+.rd-stack {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.rd-stack.is-dragging {
+  cursor: grabbing;
+}
+
+.rd-stack.is-dragging .chapter {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.rd-page {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--page-bg);
+  background-image: var(--paper-texture);
+  transform-origin: 0 0;
+}
+
+.rd-layer[data-role="current"] {
+  z-index: 3;
+}
+
+.rd-layer[data-role="next"],
+.rd-layer[data-role="prev"] {
+  z-index: 0;
+  visibility: hidden;
+}
+
+.rd-layer.is-turning,
+.rd-layer.is-under,
+.rd-layer.is-sliding {
+  visibility: visible;
+}
+
+.rd-layer.is-turning {
+  will-change: clip-path;
+}
+
+.rd-layer.is-sliding {
+  will-change: transform;
+  box-shadow: 0 0 28px rgb(0 0 0 / 0.12);
+}
+
+.rd-frame {
+  position: absolute;
+  top: var(--pad-top);
+  bottom: var(--pad-bottom);
+  left: var(--mx);
+  width: var(--col-w, calc(100% - 2 * var(--mx)));
+  container: page / inline-size;
+}
+
+.rd-flow {
+  width: var(--col-w, 100%);
+  height: var(--col-h, 100%);
+  column-width: var(--col-w, 100%);
+  column-gap: var(--col-gap, calc(2 * var(--mx)));
+  column-fill: auto;
+  will-change: transform;
+}
+
+.rd-measure {
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.rd-page.is-blank .rd-flow {
+  display: grid;
+  place-items: center;
+  column-width: auto;
+}
+
+.rd-blank-label {
+  font-family: var(--font-body);
+  font-size: calc(var(--fs) * 1.2);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ------------------------------------------------------------------ curl -------------- */
+
+.rd-flap {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.rd-flap.is-active {
+  will-change: transform, clip-path;
+}
+
+.rd-flap .rd-page {
+  visibility: visible;
+  background-color: var(--paper-back);
+}
+
+/* El dorso deja ver el texto espejado, muy tenue, como el papel real. */
+.rd-flap .rd-flow {
+  opacity: 0.13;
+}
+
+.reader[data-mode="dark"] .rd-flap .rd-flow {
+  opacity: 0.2;
+}
+
+.reader[data-mode="dark"] .rd-cast {
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.25) 35%, rgb(0 0 0 / 0));
+}
+
+.rd-flap-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0) 0%,
+    rgb(255 255 255 / 0.5) 7%,
+    rgb(255 255 255 / 0.12) 22%,
+    rgb(0 0 0 / 0.04) 55%,
+    rgb(0 0 0 / 0.14) 100%
+  );
+}
+
+.reader[data-mode="dark"] .rd-flap-shade {
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0) 0%,
+    rgb(255 255 255 / 0.14) 7%,
+    rgb(255 255 255 / 0.03) 22%,
+    rgb(0 0 0 / 0.1) 55%,
+    rgb(0 0 0 / 0.3) 100%
+  );
+}
+
+.rd-cast {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.34), rgb(0 0 0 / 0.12) 35%, rgb(0 0 0 / 0));
+}
+
+.rd-cast.is-active {
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------------ desplazamiento ---- */
+
+.rd-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scroll-padding-top: var(--pad-top);
+}
+
+.rd-scroll-inner {
+  max-width: calc(680px + 2 * var(--mx));
+  margin: 0 auto;
+  padding: var(--pad-top) var(--mx) calc(var(--pad-bottom) + 40vh);
+}
+
+.rd-scroll-chapter {
+  container: page / inline-size;
+}
+
+.rd-scroll-chapter + .rd-scroll-chapter {
+  margin-top: 3em;
+  padding-top: 2.4em;
+  border-top: 1px solid var(--rule);
+}
+
+/* ------------------------------------------------------------------ tipografía -------- */
+
+.chapter {
+  font-family: var(--font-body);
+  font-size: var(--fs);
+  line-height: var(--lh);
+  font-weight: var(--weight-body);
+  color: var(--ink);
+  font-optical-sizing: auto;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+  orphans: 2;
+  widows: 2;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+.reader[data-bold="true"] .chapter {
+  font-weight: max(560, var(--weight-body));
+}
+
+.reader[data-justify="true"] .chapter .b-p,
+.reader[data-justify="true"] .chapter li {
+  text-align: justify;
+}
+
+.chapter > :first-child {
+  margin-top: 0;
+}
+
+.ch-head {
+  padding: 1.2em 0 1.3em;
+  margin-bottom: 1.1em;
+  border-bottom: 1px solid var(--rule);
+  break-after: avoid;
+  break-inside: avoid;
+}
+
+.ch-label {
+  margin: 0 0 0.7em;
+  font-family: var(--font-ui);
+  font-size: 0.66em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ch-title {
+  margin: 0;
+  font-size: 1.6em;
+  line-height: 1.16;
+  font-weight: 620;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  hyphens: manual;
+}
+
+.b-h {
+  margin: 1.5em 0 0.55em;
+  line-height: 1.25;
+  font-weight: 650;
+  break-after: avoid;
+  -webkit-column-break-after: avoid;
+  break-inside: avoid;
+  text-wrap: balance;
+  hyphens: manual;
+}
+
+h2.b-h {
+  font-size: 1.14em;
+}
+
+h3.b-h {
+  font-size: 1.02em;
+}
+
+h4.b-h,
+h5.b-h {
+  font-size: 0.95em;
+  color: var(--ink-soft);
+}
+
+.b-h-num {
+  font-family: var(--font-ui);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 0.15em;
+  font-variant-numeric: tabular-nums;
+}
+
+.b-p {
+  margin: 0 0 0.8em;
+}
+
+.chapter strong {
+  font-weight: max(650, calc(var(--weight-body) + 220));
+}
+
+.chapter a.ext,
+.chapter a.xref {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.chapter .xref-broken {
+  color: var(--ink-soft);
+}
+
+.chapter code.c {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  padding: 0.08em 0.32em;
+  border-radius: 0.3em;
+  background: var(--code-bg);
+  overflow-wrap: anywhere;
+  hyphens: none;
+}
+
+.chapter .ref {
+  padding: 0.08em 0.4em;
+  border-radius: 0.45em;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.74em;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  hyphens: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.chapter .ref-line {
+  opacity: 0.7;
+}
+
+.chapter .term {
+  text-decoration: underline dotted color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1.5px;
+}
+
+.b-list {
+  margin: 0 0 0.9em;
+  padding-left: 1.3em;
+}
+
+.b-list li {
+  margin: 0.25em 0;
+}
+
+.b-list li::marker {
+  color: var(--ink-soft);
+}
+
+.b-divider {
+  border: 0;
+  height: 1px;
+  margin: 1.6em 18%;
+  background: var(--rule);
+}
+
+/* Callouts: etiquetas del MD ("Implementado", "Por verificar"…). */
+.b-callout {
+  --tone: var(--tone-nota);
+  margin: 1em 0 1.1em;
+  padding: 0.75em 0.9em 0.2em;
+  border-radius: 0.8em;
+  background: color-mix(in srgb, var(--tone) 9%, transparent);
+  border-left: 3px solid var(--tone);
+  font-size: 0.94em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.b-callout[data-tone="implementado"] {
+  --tone: var(--tone-implementado);
+}
+.b-callout[data-tone="interpretacion"] {
+  --tone: var(--tone-interpretacion);
+}
+.b-callout[data-tone="verificar"] {
+  --tone: var(--tone-verificar);
+}
+.b-callout[data-tone="evolucion"] {
+  --tone: var(--tone-evolucion);
+}
+.b-callout[data-tone="limite"] {
+  --tone: var(--tone-limite);
+}
+.b-callout[data-tone="matiz"] {
+  --tone: var(--tone-matiz);
+}
+.b-callout[data-tone="pregunta"] {
+  --tone: var(--tone-pregunta);
+}
+.b-callout[data-tone="consejo"] {
+  --tone: var(--tone-consejo);
+}
+.b-callout[data-tone="aviso"] {
+  --tone: var(--tone-aviso);
+}
+
+.b-callout-label {
+  margin: 0 0 0.35em;
+  break-after: avoid;
+  font-family: var(--font-ui);
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.b-callout-body .b-p {
+  margin-bottom: 0.6em;
+}
+
+/* Guiones para decir en voz alta. */
+.b-quote {
+  margin: 1em 0 1.1em;
+  padding: 0.2em 0 0.2em 1em;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  font-style: italic;
+  color: color-mix(in srgb, var(--ink) 88%, var(--accent));
+}
+
+.b-quote p {
+  margin: 0 0 0.7em;
+}
+
+/* Código. */
+.b-code {
+  position: relative;
+  margin: 1em 0 1.15em;
+  border-radius: 0.75em;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+
+/* Botón ⤢ para abrir código y tablas en el visor (posición absoluta: no altera la paginación). */
+.rd-expand {
+  position: absolute;
+  top: 0.35em;
+  right: 0.35em;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--page-bg) 70%, transparent);
+  color: var(--ink-soft);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  cursor: zoom-in;
+}
+
+.rd-expand svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rd-expand:active {
+  transform: scale(0.92);
+}
+
+.b-code[data-lines="1"],
+.b-code[data-lines="2"],
+.b-code[data-lines="3"],
+.b-code[data-lines="4"],
+.b-code[data-lines="5"],
+.b-code[data-lines="6"],
+.b-code[data-lines="7"],
+.b-code[data-lines="8"],
+.b-code[data-lines="9"],
+.b-code[data-lines="10"],
+.b-code[data-lines="11"],
+.b-code[data-lines="12"],
+.b-code[data-lines="13"],
+.b-code[data-lines="14"] {
+  break-inside: avoid;
+}
+
+.b-code-lang {
+  position: absolute;
+  top: 0.8em;
+  left: 1.1em;
+  font-family: var(--font-ui);
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.8;
+}
+
+.b-code pre.shiki,
+.rv-code pre.shiki {
+  margin: 0;
+  padding: 0.95em 1em;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: calc(var(--fs) * var(--code-scale));
+  line-height: 1.5;
+  tab-size: 2;
+  hyphens: none;
+  text-align: left;
+}
+
+.b-code pre.shiki {
+  padding-top: 2.4em;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.reader[data-codewrap="true"] .b-code pre.shiki {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}
+
+.shiki span {
+  color: var(--shiki-light);
+}
+
+.reader[data-mode="dark"] .shiki span {
+  color: var(--shiki-dark);
+}
+
+/* Diagramas: variante según el modo. */
+.b-diagram {
+  margin: 1.1em 0 1.2em;
+  padding: 0.6em;
+  border-radius: 0.75em;
+  background: color-mix(in srgb, var(--code-bg) 70%, transparent);
+  break-inside: avoid;
+  cursor: zoom-in;
+}
+
+.b-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(var(--col-h, 70vh) - 3em);
+}
+
+.b-diagram-dark {
+  display: none;
+}
+
+.reader[data-mode="dark"] .b-diagram-light {
+  display: none;
+}
+
+.reader[data-mode="dark"] .b-diagram-dark {
+  display: block;
+}
+
+/* Tablas. */
+.b-table {
+  position: relative;
+  margin: 1em 0 1.15em;
+  font-size: 0.86em;
+  line-height: 1.42;
+}
+
+.b-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.b-table th {
+  text-align: left;
+  font-family: var(--font-ui);
+  font-size: 0.78em;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0.35em 0.5em 0.45em;
+  border-bottom: 1.5px solid var(--rule);
+}
+
+.b-table td {
+  vertical-align: top;
+  padding: 0.5em;
+  border-bottom: 1px solid var(--rule);
+}
+
+.b-table tr {
+  break-inside: avoid;
+}
+
+.b-table td[data-align="right"] {
+  text-align: right;
+}
+
+.b-table td[data-align="center"] {
+  text-align: center;
+}
+
+/* Con 3 o más columnas y página angosta, cada fila se vuelve una tarjeta. */
+@container page (max-width: 560px) {
+  .b-table[data-layout="cards"] table,
+  .b-table[data-layout="cards"] tbody,
+  .b-table[data-layout="cards"] tr,
+  .b-table[data-layout="cards"] td {
+    display: block;
+  }
+
+  .b-table[data-layout="cards"] thead {
+    display: none;
+  }
+
+  .b-table[data-layout="cards"] tr {
+    margin: 0 0 0.6em;
+    padding: 0.55em 0.75em 0.3em;
+    border-radius: 0.7em;
+    background: color-mix(in srgb, var(--code-bg) 80%, transparent);
+    break-inside: avoid;
+  }
+
+  .b-table[data-layout="cards"] td {
+    padding: 0 0 0.35em;
+    border: 0;
+  }
+
+  .b-table[data-layout="cards"] td::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.72em;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .b-table[data-layout="cards"] td:first-child {
+    font-weight: 650;
+  }
+
+  .b-table[data-layout="cards"] td:first-child::before {
+    display: none;
+  }
+}
+
+/* Checklist. */
+.b-checklist {
+  list-style: none;
+  margin: 0 0 1em;
+  padding: 0;
+}
+
+.b-check label {
+  display: flex;
+  gap: 0.6em;
+  align-items: flex-start;
+  padding: 0.25em 0;
+}
+
+.b-check input {
+  appearance: none;
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin-top: 0.2em;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-soft);
+  display: grid;
+  place-items: center;
+}
+
+.b-check input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.b-check input:checked::after {
+  content: "";
+  width: 0.32em;
+  height: 0.58em;
+  margin-top: -0.12em;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Banco de preguntas (la revelación de respuestas llega en la fase 5). */
+.qa {
+  margin: 0 0 1em;
+  padding: 0.75em 0.9em 0.15em;
+  border-radius: 0.85em;
+  background: color-mix(in srgb, var(--tone-pregunta) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone-pregunta) 16%, transparent);
+  break-inside: avoid;
+}
+
+.qa-q {
+  margin: 0 0 0.45em;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.qa-n {
+  font-family: var(--font-ui);
+  font-size: 0.82em;
+  color: var(--tone-pregunta);
+  font-variant-numeric: tabular-nums;
+}
+
+.qa-a p {
+  margin: 0 0 0.65em;
+  font-size: 0.95em;
+}
+
+.b-img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(var(--col-h, 70vh) - 2em);
+  margin: 1em auto;
+  break-inside: avoid;
+}

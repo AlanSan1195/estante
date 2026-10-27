@@ -1,0 +1,73 @@
+---
+/**
+ * Layout base de toda la app (estante y lector): viewport con safe areas, metadatos de web app
+ * instalable en iOS/Android (manifest e iconos), color de la barra de estado, navegación con View
+ * Transitions, la capa de la PWA (service worker, instalación, versión nueva) y, en las páginas del
+ * estante, la barra de pestañas de vidrio.
+ */
+import '@fontsource-variable/inter/index.css';
+import '../styles/tokens.css';
+import '../styles/glass.css';
+import '../styles/pwa.css';
+import { ClientRouter } from 'astro:transitions';
+import TabBar from '../components/TabBar.astro';
+import type { Tab } from '../components/tabs';
+import PwaLayer from '../ui/pwa/PwaLayer';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Pestaña activa; si se omite, no se muestra la barra (el lector ocupa toda la pantalla). */
+  tab?: Tab;
+  /** El lector aplica su propia apariencia (claro/oscuro elegido); el estante sigue al sistema. */
+  reader?: boolean;
+}
+
+const {
+  title,
+  description = 'Biblioteca de estudio de tus proyectos',
+  tab,
+  reader = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" data-view={reader ? 'reader' : 'shelf'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content={description} />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Estante" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>{title}</title>
+    {
+      reader && (
+        <script is:inline data-astro-rerun>
+          // Aplica la apariencia elegida en el lector antes de pintar (copia mínima en localStorage).
+          try {
+            var hint = JSON.parse(localStorage.getItem('estante:theme') || 'null');
+            if (hint && (hint.appearance === 'light' || hint.appearance === 'dark')) {
+              document.documentElement.dataset.mode = hint.appearance;
+            }
+          } catch (e) {}
+        </script>
+      )
+    }
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    {tab && <TabBar active={tab} />}
+    <PwaLayer client:only="react" transition:persist="pwa" />
+  </body>
+</html>

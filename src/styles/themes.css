@@ -1,0 +1,210 @@
+/*
+ * Temas del lector: cada uno es un conjunto de variables con variante clara y oscura.
+ * El motor pone data-theme y data-mode en la raíz del lector (.reader).
+ *
+ * --page-bg      fondo del papel        --ink / --ink-soft   texto y texto secundario
+ * --accent       acento                 --rule              filetes y bordes finos
+ * --code-bg      fondo del código       --paper-back        dorso de la página (solapa del curl)
+ * --glass-*      vidrio de los controles
+ */
+
+.reader {
+  --paper-texture: none;
+  --weight-body: 400;
+  --tone-implementado: #2f9e5b;
+  --tone-interpretacion: #2b7bd8;
+  --tone-verificar: #c98a12;
+  --tone-evolucion: #8e5bd8;
+  --tone-limite: #d0533d;
+  --tone-matiz: #0f9aa8;
+  --tone-pregunta: #c2477e;
+  --tone-nota: #7a7a80;
+  --tone-consejo: #3c9a8a;
+  --tone-aviso: #d9822b;
+}
+
+/* ---------------- Original ---------------- */
+.reader[data-theme="original"][data-mode="light"] {
+  --page-bg: #ffffff;
+  --ink: #1d1d1f;
+  --ink-soft: #6e6e73;
+  --accent: #0a7aff;
+  --rule: rgb(0 0 0 / 0.09);
+  --code-bg: #f4f4f6;
+  --paper-back: #f2f2f2;
+  --glass-bg: rgb(246 246 248 / 0.72);
+  --glass-strong: rgb(236 236 240 / 0.86);
+  --glass-ink: #1d1d1f;
+  --glass-border: rgb(255 255 255 / 0.7);
+  --selection: rgb(10 122 255 / 0.22);
+}
+.reader[data-theme="original"][data-mode="dark"] {
+  --page-bg: #121214;
+  --ink: #e9e9ec;
+  --ink-soft: #98989f;
+  --accent: #4aa3ff;
+  --rule: rgb(255 255 255 / 0.1);
+  --code-bg: #1d1d21;
+  --paper-back: #2f2f34;
+  --glass-bg: rgb(48 48 52 / 0.62);
+  --glass-strong: rgb(58 58 62 / 0.86);
+  --glass-ink: #f2f2f7;
+  --glass-border: rgb(255 255 255 / 0.12);
+  --selection: rgb(74 163 255 / 0.3);
+}
+
+/* ---------------- Tranquilo ---------------- */
+.reader[data-theme="tranquilo"][data-mode="light"] {
+  --page-bg: #e7e7e9;
+  --ink: #3a3a3e;
+  --ink-soft: #77777d;
+  --accent: #4f6d8f;
+  --rule: rgb(0 0 0 / 0.08);
+  --code-bg: #dcdce0;
+  --paper-back: #dadadd;
+  --glass-bg: rgb(225 225 229 / 0.74);
+  --glass-strong: rgb(214 214 219 / 0.88);
+  --glass-ink: #2c2c2f;
+  --glass-border: rgb(255 255 255 / 0.55);
+  --selection: rgb(79 109 143 / 0.25);
+}
+.reader[data-theme="tranquilo"][data-mode="dark"] {
+  --page-bg: #2b2b2e;
+  --ink: #b9b9be;
+  --ink-soft: #85858b;
+  --accent: #8aa7c7;
+  --rule: rgb(255 255 255 / 0.09);
+  --code-bg: #333337;
+  --paper-back: #434347;
+  --glass-bg: rgb(64 64 68 / 0.62);
+  --glass-strong: rgb(72 72 76 / 0.86);
+  --glass-ink: #e6e6ea;
+  --glass-border: rgb(255 255 255 / 0.1);
+  --selection: rgb(138 167 199 / 0.3);
+}
+
+/* ---------------- Papel ---------------- */
+.reader[data-theme="papel"] {
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.18 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.reader[data-theme="papel"][data-mode="light"] {
+  --page-bg: #f1ebe0;
+  --ink: #2f2a23;
+  --ink-soft: #7b7164;
+  --accent: #9a5b2c;
+  --rule: rgb(70 50 20 / 0.12);
+  --code-bg: #e8e0d1;
+  --paper-back: #e6dccb;
+  --glass-bg: rgb(236 228 214 / 0.74);
+  --glass-strong: rgb(228 218 202 / 0.9);
+  --glass-ink: #2f2a23;
+  --glass-border: rgb(255 255 255 / 0.5);
+  --selection: rgb(154 91 44 / 0.22);
+}
+.reader[data-theme="papel"][data-mode="dark"] {
+  --page-bg: #1f1c18;
+  --ink: #dcd4c6;
+  --ink-soft: #9a8f80;
+  --accent: #d39a63;
+  --rule: rgb(255 240 210 / 0.1);
+  --code-bg: #29251f;
+  --paper-back: #3a352d;
+  --glass-bg: rgb(58 52 44 / 0.64);
+  --glass-strong: rgb(66 60 51 / 0.88);
+  --glass-ink: #efe6d6;
+  --glass-border: rgb(255 240 210 / 0.12);
+  --selection: rgb(211 154 99 / 0.28);
+}
+
+/* ---------------- Negrita ---------------- */
+.reader[data-theme="negrita"] {
+  --weight-body: 560;
+}
+.reader[data-theme="negrita"][data-mode="light"] {
+  --page-bg: #ffffff;
+  --ink: #000000;
+  --ink-soft: #3c3c40;
+  --accent: #0060df;
+  --rule: rgb(0 0 0 / 0.16);
+  --code-bg: #f0f0f2;
+  --paper-back: #f0f0f0;
+  --glass-bg: rgb(246 246 248 / 0.76);
+  --glass-strong: rgb(236 236 240 / 0.9);
+  --glass-ink: #000000;
+  --glass-border: rgb(255 255 255 / 0.7);
+  --selection: rgb(0 96 223 / 0.24);
+}
+.reader[data-theme="negrita"][data-mode="dark"] {
+  --page-bg: #000000;
+  --ink: #ffffff;
+  --ink-soft: #c7c7cc;
+  --accent: #5eb0ff;
+  --rule: rgb(255 255 255 / 0.18);
+  --code-bg: #141416;
+  --paper-back: #2a2a2d;
+  --glass-bg: rgb(40 40 44 / 0.66);
+  --glass-strong: rgb(50 50 54 / 0.9);
+  --glass-ink: #ffffff;
+  --glass-border: rgb(255 255 255 / 0.16);
+  --selection: rgb(94 176 255 / 0.32);
+}
+
+/* ---------------- Calma ---------------- */
+.reader[data-theme="calma"][data-mode="light"] {
+  --page-bg: #f2e5d0;
+  --ink: #4a3b2a;
+  --ink-soft: #8a7559;
+  --accent: #b2662c;
+  --rule: rgb(90 60 20 / 0.13);
+  --code-bg: #eadbc2;
+  --paper-back: #e7d6ba;
+  --glass-bg: rgb(238 224 200 / 0.74);
+  --glass-strong: rgb(230 214 188 / 0.9);
+  --glass-ink: #3e3122;
+  --glass-border: rgb(255 255 255 / 0.5);
+  --selection: rgb(178 102 44 / 0.24);
+}
+.reader[data-theme="calma"][data-mode="dark"] {
+  --page-bg: #352b22;
+  --ink: #eadcc4;
+  --ink-soft: #b29e82;
+  --accent: #e3a066;
+  --rule: rgb(255 230 190 / 0.12);
+  --code-bg: #3e3329;
+  --paper-back: #4e4236;
+  --glass-bg: rgb(72 60 48 / 0.64);
+  --glass-strong: rgb(82 69 56 / 0.88);
+  --glass-ink: #f4e8d4;
+  --glass-border: rgb(255 230 190 / 0.13);
+  --selection: rgb(227 160 102 / 0.3);
+}
+
+/* ---------------- Enfoque ---------------- */
+.reader[data-theme="enfoque"][data-mode="light"] {
+  --page-bg: #fffbf0;
+  --ink: #2b2925;
+  --ink-soft: #77716a;
+  --accent: #c46b16;
+  --rule: rgb(60 40 10 / 0.09);
+  --code-bg: #f6f0e0;
+  --paper-back: #f4edda;
+  --glass-bg: rgb(250 244 230 / 0.76);
+  --glass-strong: rgb(243 235 216 / 0.9);
+  --glass-ink: #2b2925;
+  --glass-border: rgb(255 255 255 / 0.6);
+  --selection: rgb(196 107 22 / 0.22);
+}
+.reader[data-theme="enfoque"][data-mode="dark"] {
+  --page-bg: #1b1a18;
+  --ink: #f1e6d2;
+  --ink-soft: #a89d8b;
+  --accent: #f0a050;
+  --rule: rgb(255 240 210 / 0.1);
+  --code-bg: #24221f;
+  --paper-back: #37342f;
+  --glass-bg: rgb(52 49 44 / 0.64);
+  --glass-strong: rgb(62 58 52 / 0.88);
+  --glass-ink: #f7eedd;
+  --glass-border: rgb(255 240 210 / 0.12);
+  --selection: rgb(240 160 80 / 0.3);
+}
