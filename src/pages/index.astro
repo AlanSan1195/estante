@@ -1,0 +1,22 @@
+---
+import '../styles/glass.css';
+import '../styles/app.css';
+import AppLayout from '../layouts/AppLayout.astro';
+import { readAllManifests, readCatalog } from '../lib/catalog';
+import HomeView from '../ui/library/HomeView';
+
+const catalog = await readCatalog();
+const manifests = await readAllManifests();
+const chapterTitles = Object.fromEntries(
+  manifests.map((m) => [m.slug, Object.fromEntries(m.chapters.map((c) => [c.id, c.title]))]),
+);
+---
+
+<AppLayout title="Estante" tab="inicio">
+  <main class="app-page" data-page="inicio">
+    <header class="app-header">
+      <h1>Inicio</h1>
+    </header>
+    <HomeView client:load books={catalog.books} chapterTitles={chapterTitles} />
+  </main>
+</AppLayout>

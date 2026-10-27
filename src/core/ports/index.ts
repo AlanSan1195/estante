@@ -1,0 +1,13 @@
+export type { AnnotationRepository } from './AnnotationRepository';
+export type { BookRenderer, ChapterRenderContext } from './BookRenderer';
+export type { BookRepository, PublishedBook } from './BookRepository';
+export type { CodeHighlighter } from './CodeHighlighter';
+export type { ContentEnricher } from './ContentEnricher';
+export type { CoverGenerator, CoverInput, GeneratedCover } from './CoverGenerator';
+export type { DiagramRenderer, RenderedDiagram } from './DiagramRenderer';
+export type { DocumentParser, ParseResult } from './DocumentParser';
+export type { OfflineRepository } from './OfflineRepository';
+export type { PracticeRepository } from './PracticeRepository';
+export type { PreferencesRepository } from './PreferencesRepository';
+export type { ProgressRepository } from './ProgressRepository';
+export type { ProjectSource, SourceDocument } from './ProjectSource';
