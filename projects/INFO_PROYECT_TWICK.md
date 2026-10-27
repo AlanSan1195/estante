@@ -69,7 +69,7 @@ Aprende esta historia primero. Las siguientes secciones explican cada verbo: val
 
 **La autoridad para las versiones es la configuración y el lockfile del checkout.** Parte de la documentación anterior menciona Astro 5 y Vercel; la configuración actual utiliza Astro 6 y un adaptador de Node. Explica el estado presente y, si surge la discrepancia, reconócela como documentación que quedó atrás.
 
-Referencia: [package.json](/Users/alan/Documents/Dev/projects/twick/package.json:15), [astro.config.mjs](/Users/alan/Documents/Dev/projects/twick/astro.config.mjs:13) y [pnpm-lock.yaml](/Users/alan/Documents/Dev/projects/twick/pnpm-lock.yaml).
+Referencia: [package.json](/proyectos/twick/package.json:15), [astro.config.mjs](/proyectos/twick/astro.config.mjs:13) y [pnpm-lock.yaml](/proyectos/twick/pnpm-lock.yaml).
 
 | Tecnología | Versión resuelta observada | Para qué aparece en Twick |
 |---|---|---|
@@ -119,7 +119,7 @@ Fragmento real de `package.json`, líneas 2–9:
 
 ### 2.3 Override de Sharp y ejecución de scripts de dependencias
 
-Referencia: [pnpm-workspace.yaml](/Users/alan/Documents/Dev/projects/twick/pnpm-workspace.yaml:9).
+Referencia: [pnpm-workspace.yaml](/proyectos/twick/pnpm-workspace.yaml:9).
 
 ```yaml
 overrides:
@@ -201,7 +201,7 @@ Esta distinción explica varias respuestas de escalabilidad: el diseño actual p
 
 **SSR** significa producir HTML en el servidor al atender una petición. **SSG o prerenderizado** significa producirlo durante el build. **Hidratación** significa que JavaScript conecta comportamiento interactivo con una interfaz renderizada. Son ejes diferentes: una página puede entregar HTML desde el servidor y después hidratar una isla React.
 
-Referencia: [astro.config.mjs](/Users/alan/Documents/Dev/projects/twick/astro.config.mjs:13).
+Referencia: [astro.config.mjs](/proyectos/twick/astro.config.mjs:13).
 
 ```js
 export default defineConfig({
@@ -223,7 +223,7 @@ Y el adaptador actual, líneas 63–65:
 
 ### 4.2 Componentes Astro frente a componentes React
 
-Referencia: [src/pages/index.astro](/Users/alan/Documents/Dev/projects/twick/src/pages/index.astro:11).
+Referencia: [src/pages/index.astro](/proyectos/twick/src/pages/index.astro:11).
 
 ```astro
 <Layout
@@ -251,7 +251,7 @@ Las directivas `client:*` permiten elegir cómo se activa una isla. En tu estudi
 
 El beneficio y el coste cambian según el componente. Un dashboard con APIs del navegador puede justificar trabajo en cliente; una sección informativa no necesita el mismo tratamiento. Si te preguntan “¿por qué no usar React para todo?”, responde desde la responsabilidad y el coste, no desde una preferencia por un framework.
 
-Punto de montaje real: [dashboard.astro](/Users/alan/Documents/Dev/projects/twick/src/pages/dashboard.astro:160).
+Punto de montaje real: [dashboard.astro](/proyectos/twick/src/pages/dashboard.astro:160).
 
 ```astro
 <StreamerDashboard client:only="react" initialOverlayToken={initialOverlayToken} />
@@ -267,7 +267,7 @@ Consulta oficial: [directivas de Astro](https://docs.astro.build/en/reference/di
 
 En Astro, la ubicación bajo `src/pages` determina rutas. Un archivo `src/pages/api/chat-stream.ts` exporta un manejador HTTP; `src/pages/dashboard.astro` produce una página. El nombre `GET` o `POST` corresponde al método HTTP atendido.
 
-El repositorio también contiene una action tipada. Referencia: [src/actions/index.ts](/Users/alan/Documents/Dev/projects/twick/src/actions/index.ts:15).
+El repositorio también contiene una action tipada. Referencia: [src/actions/index.ts](/proyectos/twick/src/actions/index.ts:15).
 
 ```ts
   generateOverlayToken: defineAction({
@@ -293,7 +293,7 @@ El esquema `z.object({})` describe la entrada de esa action. El handler resuelve
 
 **React mantiene la interfaz sincronizada con el estado.** En Twick, el dashboard coordina configuración, conexión del chat, mensajes, micrófono y overlay; los componentes hijos reciben datos y callbacks mediante props. Esta organización evita que cada control tenga una copia independiente de la misma decisión.
 
-Referencia central: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:137).
+Referencia central: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:137).
 
 Extracto real, líneas 138–142:
 
@@ -326,7 +326,7 @@ En Twick hay dos tipos de información que conviene separar: decisiones que debe
 | `useMemo` | Conserva un resultado calculado según dependencias | Comparación conceptual: no se encontró uso actual en Twick | No es almacenamiento durable ni reemplaza estado. |
 | `memo` | Puede omitir un render si las props se consideran iguales | Mensajes ya renderizados | Su comparación debe incluir los datos que afectan el resultado. |
 
-Ejemplo real del hook de captura: [useVoiceCapture.ts](/Users/alan/Documents/Dev/projects/twick/src/hooks/useVoiceCapture.ts:94), extracto de las líneas 94–101:
+Ejemplo real del hook de captura: [useVoiceCapture.ts](/proyectos/twick/src/hooks/useVoiceCapture.ts:94), extracto de las líneas 94–101:
 
 ```ts
   // El callback y los umbrales se guardan en refs para que cambiar las perillas
@@ -390,7 +390,7 @@ Twick usa referencias y señales de cancelación para coordinar ese ciclo. En vo
 
 La complejidad de añadir y recortar arrays suele ser lineal respecto del tamaño retenido. Con un máximo pequeño, ese coste puede ser una decisión práctica adecuada. No hace falta afirmar que todo es O(1) para defenderlo; hay que entender qué tamaño puede alcanzar cada estructura.
 
-Implementación real de retención y deduplicación: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:193).
+Implementación real de retención y deduplicación: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:193).
 
 ```tsx
 const appendChatMessage = useCallback((newMessage: ChatMessage) => {
@@ -404,7 +404,7 @@ const appendChatMessage = useCallback((newMessage: ChatMessage) => {
 
 `MAX_MESSAGES` limita a 200 los mensajes retenidos. La forma funcional de `setMessages` trabaja con el estado anterior que React entrega; evita calcular el siguiente array desde una copia capturada hace varios renders. `some` busca el mismo ID para no insertar una copia y `slice` conserva el tramo más reciente.
 
-Ventana virtual real: [ChatWindow.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/ChatWindow.tsx:163), extracto de apertura:
+Ventana virtual real: [ChatWindow.tsx](/proyectos/twick/src/components/ChatWindow.tsx:163), extracto de apertura:
 
 ```tsx
 <Virtuoso
@@ -433,7 +433,7 @@ Memoizar significa conservar un resultado o evitar un cálculo mientras sus entr
 
 En `ChatMessage.tsx` existe una comparación personalizada para `memo`. La suposición útil es que un mensaje con un ID concreto es inmutable. Si en el futuro se incorpora edición de contenido conservando ese ID, la comparación deberá revisarse: no cubre todos los campos de texto como `content` y `username`. Es una limitación de contrato detectada estáticamente, no un fallo reproducido en la interfaz actual.
 
-Referencia: [ChatMessage.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/ChatMessage.tsx:353).
+Referencia: [ChatMessage.tsx](/proyectos/twick/src/components/ChatMessage.tsx:353).
 
 ```tsx
 const ChatMessage = memo(ChatMessageComponent, (prev, next) => {
@@ -464,7 +464,7 @@ Usa percentiles —por ejemplo p95, el valor por debajo del cual cae el 95 % de 
 
 ### 7.1 Tokens y utilidades de Tailwind 4
 
-Referencia: [global.css](/Users/alan/Documents/Dev/projects/twick/src/styles/global.css:1), extracto de las líneas 1–13:
+Referencia: [global.css](/proyectos/twick/src/styles/global.css:1), extracto de las líneas 1–13:
 
 ```css
 @import "tailwindcss";
@@ -494,7 +494,7 @@ Consulta: [theme variables](https://tailwindcss.com/docs/theme) y [guía de actu
 
 El mismo tipo de necesidad aparece en el documento del overlay: el color debe estar listo desde el comienzo, porque OBS captura la página como una fuente visual. Las variables CSS permiten ajustar una familia completa de componentes sin pasar un color distinto a cada elemento.
 
-Actualización real: [PlatformToggle.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/PlatformToggle.tsx:23).
+Actualización real: [PlatformToggle.tsx](/proyectos/twick/src/components/PlatformToggle.tsx:23).
 
 ```tsx
 function applyColor(p: Platform) {
@@ -545,7 +545,7 @@ Explica por qué un valor de volumen se guarda en ref y un mensaje de error en s
 
 El `POST /api/generate-phrases` resuelve identidad, lee JSON, valida el nombre, normaliza contexto y personalidad, busca frases reutilizables y administra la cuota del usuario. En un miss, genera frases y después saludos mediante IA; guarda el resultado y confirma la reserva del contexto. Se liberan las reservas en las salidas de error.
 
-Referencia principal: [generate-phrases.ts](/Users/alan/Documents/Dev/projects/twick/src/pages/api/generate-phrases.ts:54).
+Referencia principal: [generate-phrases.ts](/proyectos/twick/src/pages/api/generate-phrases.ts:54).
 
 **Normalizar** significa llevar entradas equivalentes a una representación comparable: por ejemplo, quitar espacios extremos y pasar a minúsculas. No es lo mismo que validar que el nombre sea un juego real. Esa comprobación semántica se solicita al modelo; el SSE por sí solo puede trabajar con fallback para un nombre no vacío.
 
@@ -553,7 +553,7 @@ Referencia principal: [generate-phrases.ts](/Users/alan/Documents/Dev/projects/t
 
 El caché reutiliza un resultado ya obtenido. **Single-flight** permite que varias peticiones esperen el mismo trabajo que todavía está en curso. Sin esta segunda técnica, dos usuarios que pidan el mismo contexto al mismo tiempo podrían pagar dos generaciones aunque el caché se guarde inmediatamente después de la primera.
 
-Extractos literales de [generate-phrases.ts](/Users/alan/Documents/Dev/projects/twick/src/pages/api/generate-phrases.ts:21), líneas 21, 123 y 146, mostrados por separado:
+Extractos literales de [generate-phrases.ts](/proyectos/twick/src/pages/api/generate-phrases.ts:21), líneas 21, 123 y 146, mostrados por separado:
 
 ```ts
 const inFlightGenerations = new Map<string, Promise<MessagePattern>>();
@@ -575,7 +575,7 @@ Un `Map` relaciona claves con valores; aquí el valor es una promesa. Guardar la
 
 La cuota es de cuatro juegos/contextos registrados por usuario durante una ventana de 48 horas desde el primer registro confirmado. No es “cuatro cada día a medianoche”. Cambiar de personalidad sobre un contexto ya registrado no consume un juego adicional.
 
-Referencia: [phraseCache.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/phraseCache.ts:74). Regla real en la línea 116:
+Referencia: [phraseCache.ts](/proyectos/twick/src/lib/phraseCache.ts:74). Regla real en la línea 116:
 
 ```ts
 return userGames.length + getReservedGameCount(userId) < MAX_GAMES_PER_USER;
@@ -595,7 +595,7 @@ Si no existe contenido generado, se pueden usar patrones hardcoded de RDR2, Bald
 
 `generateMessage` combina las fuentes para construir un evento de chat. `getRandomCategory` selecciona categorías según pesos asociados a modo y personalidad. Por ejemplo, `normal/game` distribuye 45 % a gameplay, 30 % a reacciones y 25 % a preguntas; `curious/justchatting` aumenta las preguntas al 55 %.
 
-Referencia: [chatGenerator.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/chatGenerator.ts:71).
+Referencia: [chatGenerator.ts](/proyectos/twick/src/lib/chatGenerator.ts:71).
 
 Una **distribución ponderada** divide el intervalo 0–1 en tramos. Un número aleatorio uniforme cae en uno de ellos; un tramo mayor tiene más probabilidad. Es más expresivo que elegir todas las categorías con igual frecuencia. Los porcentajes son parámetros del algoritmo, no una medición de cómo se comportan espectadores reales.
 
@@ -605,7 +605,7 @@ La personalidad afecta dos niveles: el prompt que prepara las frases y la selecc
 
 Twick genera una audiencia de 60 nombres por juego y la reutiliza. Los nombres combinan sílabas, palabras, nombres, números, prefijos y transformaciones. El generador no consulta un servicio ni obtiene personas reales de Twitch o Kick.
 
-Referencia: [usernameGenerator.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/usernameGenerator.ts:105). Declaración real:
+Referencia: [usernameGenerator.ts](/proyectos/twick/src/lib/usernameGenerator.ts:105). Declaración real:
 
 ```ts
 type PatronUsername = () => string;
@@ -632,7 +632,7 @@ for (const { patron, weight } of PATRONES) {
 
 El generador incluye eventos de suscripción ficticios con una probabilidad configurada, cooldown por juego y meses/tier simulados. La decoración de usuario también puede derivarse de un hash determinista. Eso produce continuidad visual sin almacenar un perfil real.
 
-Hash real: [ChatMessage.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/ChatMessage.tsx:42).
+Hash real: [ChatMessage.tsx](/proyectos/twick/src/components/ChatMessage.tsx:42).
 
 ```tsx
 function hashUsername(username: string, seed = 5381): number {
@@ -673,7 +673,7 @@ sequenceDiagram
   A->>A: Cancelar timers y suscripciones
 ```
 
-Cliente real: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:604).
+Cliente real: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:604).
 
 ```tsx
 const buildSseUrl = (context: string, iv: MessageInterval) =>
@@ -685,7 +685,7 @@ const openEventSource = (context: string, iv: MessageInterval, preserveMessages 
 
 `encodeURIComponent` permite incluir el contexto como valor de query sin que sus caracteres se interpreten como separadores. Codificar no valida el significado del contexto ni autoriza al usuario.
 
-Servidor real: [chat-stream.ts](/Users/alan/Documents/Dev/projects/twick/src/pages/api/chat-stream.ts:191).
+Servidor real: [chat-stream.ts](/proyectos/twick/src/pages/api/chat-stream.ts:191).
 
 ```ts
 const data = `data: ${JSON.stringify(message)}\n\n`;
@@ -718,7 +718,7 @@ El flujo tiene un máximo de dos horas. Ese timer es una regla de la aplicación
 
 `rateLimiter.ts` registra conexiones con una clave `userId:source`; las fuentes distinguen `dashboard` y `overlay`. Así pueden coexistir una conexión de cada tipo. Una conexión nueva reemplaza la anterior de la misma fuente mediante `AbortController`.
 
-Referencia: [rateLimiter.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/rateLimiter.ts:119). Expresión real de reemplazo:
+Referencia: [rateLimiter.ts](/proyectos/twick/src/lib/rateLimiter.ts:119). Expresión real de reemplazo:
 
 ```ts
 activeControllers.get(key)?.abort();
@@ -736,7 +736,7 @@ Esta comparación evita una carrera sutil: el stream A se cierra después de reg
 
 ### 9.5 Reconexión, pausa y finalización
 
-El frontend aplica espera exponencial con máximo: 1, 2, 4, 8, 16 y hasta 30 segundos, con límite de diez fallos consecutivos. `onopen` reinicia el contador. Extracto: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:649).
+El frontend aplica espera exponencial con máximo: 1, 2, 4, 8, 16 y hasta 30 segundos, con límite de diez fallos consecutivos. `onopen` reinicia el contador. Extracto: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:649).
 
 ```tsx
 const delay = Math.min(
@@ -753,7 +753,7 @@ Pausar cierra el flujo y conserva historial; reanudar puede preservar lo que hab
 
 `waveManager.ts` mantiene colas FIFO por usuario y fuente. **FIFO** significa que el primero en entrar se atiende antes. Cada wave guarda sus frases y un índice del siguiente elemento; al agotarse, sale de la cola.
 
-Estructura real: [waveManager.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/waveManager.ts:92).
+Estructura real: [waveManager.ts](/proyectos/twick/src/lib/waveManager.ts:92).
 
 ```ts
 const waveQueues = new Map<string, ActiveWave[]>();
@@ -769,7 +769,7 @@ Hay límites por revisar: no se observa un máximo o TTL de cola general; pueden
 
 ### 10.1 Interfaz, adaptador y estrategia
 
-Referencia: [ai/types.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/ai/types.ts:6).
+Referencia: [ai/types.ts](/proyectos/twick/src/lib/ai/types.ts:6).
 
 ```ts
 export interface AIService {
@@ -786,7 +786,7 @@ No hay que inventar un contenedor complejo de inyección de dependencias. Hay ob
 
 Una **promesa** representa un resultado futuro. `await` suspende la continuación de una función asíncrona hasta que ese resultado se resuelve o falla; no bloquea todo el servidor mientras espera una respuesta de red. Un **generador asíncrono** produce una secuencia de resultados que pueden llegar a lo largo del tiempo.
 
-El gestor consume los fragmentos con `for await`. Extracto real: [serviceManager.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/ai/serviceManager.ts:76).
+El gestor consume los fragmentos con `for await`. Extracto real: [serviceManager.ts](/proyectos/twick/src/lib/ai/serviceManager.ts:76).
 
 ```ts
 for await (const chunk of stream) {
@@ -798,7 +798,7 @@ for await (const chunk of stream) {
 
 ### 10.3 Round-robin y failover
 
-El gestor mantiene un índice sobre Groq y Cerebras. Actualización real: [serviceManager.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/ai/serviceManager.ts:54).
+El gestor mantiene un índice sobre Groq y Cerebras. Actualización real: [serviceManager.ts](/proyectos/twick/src/lib/ai/serviceManager.ts:54).
 
 ```ts
 currentServiceIndex = (currentServiceIndex + 1) % services.length;
@@ -866,7 +866,7 @@ flowchart TD
 
 `useVoiceCapture` solicita `getUserMedia` y crea un `MediaRecorder`. Prueba formatos que el navegador declara soportar, como WebM/Opus, WebM o MP4. No usa Web Speech Recognition ni transmite audio por WebSocket.
 
-Captura real: [useVoiceCapture.ts](/Users/alan/Documents/Dev/projects/twick/src/hooks/useVoiceCapture.ts:140).
+Captura real: [useVoiceCapture.ts](/proyectos/twick/src/hooks/useVoiceCapture.ts:140).
 
 ```ts
 stream = await navigator.mediaDevices.getUserMedia({
@@ -886,7 +886,7 @@ Consulta: [MediaRecorder](https://developer.mozilla.org/en-US/docs/Web/API/Media
 
 El audio entra en un `AudioContext`, pasa a una fuente y se conecta a un `AnalyserNode`. Se toma la señal temporal con `getByteTimeDomainData`, no un espectro de frecuencias para decidir si hay habla. Los bytes se centran en cero y se aproximan al rango −1 a 1.
 
-Cálculo real: [useVoiceCapture.ts](/Users/alan/Documents/Dev/projects/twick/src/hooks/useVoiceCapture.ts:197).
+Cálculo real: [useVoiceCapture.ts](/proyectos/twick/src/hooks/useVoiceCapture.ts:197).
 
 ```ts
 analyser.getByteTimeDomainData(levelBuffer);
@@ -925,7 +925,7 @@ La sensibilidad y confirmación pueden cambiar mediante refs sin reiniciar el pe
 
 El navegador puede producir frases más rápido de lo que responde el pipeline externo. Una cola ilimitada aumentaría latencia y coste: el chat terminaría reaccionando a algo dicho mucho antes. Twick permite un audio en proceso y uno pendiente; cuando llega otro, reemplaza el pendiente.
 
-Código real: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:777).
+Código real: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:777).
 
 ```tsx
 if (voiceProcessingRef.current) {
@@ -968,7 +968,7 @@ Después se parsea y valida localmente. El parser limita textos, verifica enums 
 
 `VoiceStoryState` conserva resumen, tema activo, temas anteriores y turnos recientes. Cada turno puede vincular lo dicho con mensajes del chat. Esa memoria vive durante el micrófono abierto; el frontend la conserva y la envía en cada petición. No es memoria permanente, RAG, base vectorial ni historial compartido entre dispositivos.
 
-Referencia: [voiceStory.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/voiceStory.ts:11).
+Referencia: [voiceStory.ts](/proyectos/twick/src/lib/voiceStory.ts:11).
 
 | Límite implementado | Valor |
 |---|---|
@@ -1003,7 +1003,7 @@ La voz comparte identidad de mensajes entre dashboard y overlay; los mensajes or
 
 La señal de 2048 muestras se reduce a 21 picos con signo para representar crestas sin actualizar React con cada muestra. Una interpolación cúbica Catmull–Rom suaviza la curva entre puntos. Las partículas se distribuyen en un volumen esférico usando una raíz cúbica del número aleatorio: el volumen crece con el cubo del radio, así que elegir el radio uniformemente concentraría demasiados puntos hacia el centro.
 
-Extracto real de [VoiceParticleOrb.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/VoiceParticleOrb.tsx:65):
+Extracto real de [VoiceParticleOrb.tsx](/proyectos/twick/src/components/VoiceParticleOrb.tsx:65):
 
 ```tsx
 const [directionX, directionY, directionZ] = randomDirection();
@@ -1012,7 +1012,7 @@ const distance = Math.cbrt(Math.random()) * SPHERE_LIMIT;
 
 Las transiciones usan suavizado dependiente del tiempo y un movimiento de resorte amortiguado. El delta se limita para evitar saltos enormes tras una pausa. El device pixel ratio se limita a 2: duplicar ambas dimensiones de un canvas cuadruplica el número de píxeles.
 
-El bucle se ejecuta cuando hay actividad, está visible, la pestaña no está oculta y el usuario no pide movimiento reducido. Parte real de la condición: [VoiceParticleOrb.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/VoiceParticleOrb.tsx:324).
+El bucle se ejecuta cuando hay actividad, está visible, la pestaña no está oculta y el usuario no pide movimiento reducido. Parte real de la condición: [VoiceParticleOrb.tsx](/proyectos/twick/src/components/VoiceParticleOrb.tsx:324).
 
 ```tsx
 const sync = () => {
@@ -1035,7 +1035,7 @@ const sync = () => {
 
 El reparto de decoración es exclusivo: 10 % emoji, 75 % intento de 7TV y 15 % texto. La variación textual se decide además con un 30 % independiente. En personalidad caótica, la cantidad de emotes se distribuye entre uno, dos y tres con pesos de 70 %, 25 % y 5 %, si hay IDs disponibles. Son probabilidades del algoritmo, no porcentajes medidos de imágenes efectivamente vistas por todos los usuarios.
 
-Referencia: [chatRealism.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/chatRealism.ts:76).
+Referencia: [chatRealism.ts](/proyectos/twick/src/lib/chatRealism.ts:76).
 
 ```ts
 const modeRoll = random();
@@ -1057,7 +1057,7 @@ El backend consulta el Top 100 de 7TV mediante una petición GraphQL POST. **Gra
 
 El catálogo se mantiene en memoria por proceso: frescura de 15 minutos, uso de datos antiguos hasta una hora, timeout de cinco segundos y cooldown de 30 segundos tras fallar. Durante una actualización se conserva una instantánea útil para no bloquear el chat.
 
-Extracto de [catalog.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/sevenTv/catalog.ts:125):
+Extracto de [catalog.ts](/proyectos/twick/src/lib/sevenTv/catalog.ts:125):
 
 ```ts
 if (!cache || now - cache.fetchedAt >= CACHE_TTL_MS) startLoad();
@@ -1076,7 +1076,7 @@ Es un ranking heurístico, no un embedding ni una consulta al modelo. Conserva v
 
 ### 12.5 Renderizado, escape y errores
 
-Fragmento real de [ChatMessage.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/ChatMessage.tsx:234), apertura del elemento:
+Fragmento real de [ChatMessage.tsx](/proyectos/twick/src/components/ChatMessage.tsx:234), apertura del elemento:
 
 ```tsx
 <img
@@ -1101,7 +1101,7 @@ Las dimensiones reservan espacio; el lazy loading permite posponer descarga; `al
 
 El navegador habitual puede tener una sesión Clerk; OBS necesita su propio mecanismo. Twick genera un UUID aleatorio, lo asocia a un usuario en servidor y lo incluye en la URL. Es un **token opaco**: su significado vive en el almacenamiento del servidor.
 
-Extracto real: [overlayTokens.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/overlayTokens.ts:41).
+Extracto real: [overlayTokens.ts](/proyectos/twick/src/lib/overlayTokens.ts:41).
 
 ```ts
 export function generateOverlayToken(userId: string): string {
@@ -1128,7 +1128,7 @@ El dashboard utiliza la action `actions.generateOverlayToken`; también existe u
 
 ### 13.3 JSON local: qué garantiza el reemplazo y qué no
 
-Referencia: [overlayPersistence.ts](/Users/alan/Documents/Dev/projects/twick/src/lib/overlayPersistence.ts:24).
+Referencia: [overlayPersistence.ts](/proyectos/twick/src/lib/overlayPersistence.ts:24).
 
 ```ts
 const STATE_PATH = process.env.OVERLAY_STATE_PATH ?? join(process.cwd(), 'data', 'overlay-state.json');
@@ -1158,7 +1158,7 @@ Para sobrevivir al reemplazo de un contenedor o instancia, la ruta necesita disc
 
 La apariencia define preset, espaciado, alineación, padding, radio, opacidad, bordes y colores. `normalizeChatAppearance` y `normalizeOverlayVisualConfig` convierten parches o valores externos en una configuración canónica: defaults, enums permitidos, colores hexadecimales y números finitos dentro de rango.
 
-Ejemplo real de límite numérico: [types.ts](/Users/alan/Documents/Dev/projects/twick/src/utils/types.ts:187).
+Ejemplo real de límite numérico: [types.ts](/proyectos/twick/src/utils/types.ts:187).
 
 ```ts
 function clampChatAppearanceNumber(
@@ -1174,7 +1174,7 @@ function clampChatAppearanceNumber(
 
 Un **clamp** impone mínimo y máximo. `Number.isFinite` excluye `NaN` e infinitos. Es distinto de confiar en un `as number`, que no transforma ni verifica un valor.
 
-El dashboard espera 200 ms antes de guardar cambios, serializa las escrituras con una cola de promesas y usa una secuencia para no mostrar el estado “guardado” de una operación vieja. Extracto: [StreamerDashboard.tsx](/Users/alan/Documents/Dev/projects/twick/src/components/StreamerDashboard.tsx:421).
+El dashboard espera 200 ms antes de guardar cambios, serializa las escrituras con una cola de promesas y usa una secuencia para no mostrar el estado “guardado” de una operación vieja. Extracto: [StreamerDashboard.tsx](/proyectos/twick/src/components/StreamerDashboard.tsx:421).
 
 ```tsx
 const sequence = overlaySaveSequenceRef.current + 1;
@@ -1204,7 +1204,7 @@ El servidor persiste y publica un evento SSE con nombre `visual-config`; el over
 
 ### 14.1 Middleware: orden y responsabilidades
 
-Referencia: [middleware.ts](/Users/alan/Documents/Dev/projects/twick/src/middleware.ts:154). El orden general es límite de peticiones, autenticación y cabeceras. Se protegen dashboard, APIs y rutas de desarrollo según sus reglas.
+Referencia: [middleware.ts](/proyectos/twick/src/middleware.ts:154). El orden general es límite de peticiones, autenticación y cabeceras. Se protegen dashboard, APIs y rutas de desarrollo según sus reglas.
 
 Clerk provee la sesión de usuario. `resolveSessionUserId` consulta esa identidad y, solo en el entorno de desarrollo permitido, contempla la sesión de prueba. No se confía en un `userId` que llegue arbitrariamente desde un formulario.
 
@@ -1275,7 +1275,7 @@ La lectura correcta es que hay una excepción explícita al chequeo de Astro y u
 
 `import type` expresa que la importación solo aporta información de tipos. `interface` describe estructuras de objetos; `type` puede representar estructuras, uniones, funciones y otras composiciones. Ambos pueden describir objetos; la elección depende de lo que quieras expresar, no de que uno sea siempre mejor.
 
-Uniones reales: [types.ts](/Users/alan/Documents/Dev/projects/twick/src/utils/types.ts:2).
+Uniones reales: [types.ts](/proyectos/twick/src/utils/types.ts:2).
 
 ```ts
 export type MessageCategory = 'gameplay' | 'reactions' | 'questions' | 'comments';
@@ -1291,7 +1291,7 @@ Una **unión literal** permite solo esos valores al escribir código tipado. Un 
 
 `any` permite operar sin comprobaciones de tipo y propaga esa pérdida de garantías. `unknown` permite recibir un valor sin conocer su forma, pero obliga a comprobarlo antes de usarlo. Es razonable para JSON externo si se justifica y valida.
 
-Type guard real: [types.ts](/Users/alan/Documents/Dev/projects/twick/src/utils/types.ts:179).
+Type guard real: [types.ts](/proyectos/twick/src/utils/types.ts:179).
 
 ```ts
 function isChatAppearancePreset(value: string): value is ChatAppearancePreset {
@@ -1319,7 +1319,7 @@ Las búsquedas típicas en Map/Set suelen ser eficientes, con coste promedio con
 
 ### 16.1 Canonical y metadata
 
-Referencia: [Layout.astro](/Users/alan/Documents/Dev/projects/twick/src/layouts/Layout.astro:35).
+Referencia: [Layout.astro](/proyectos/twick/src/layouts/Layout.astro:35).
 
 ```astro
 const canonicalURL = new URL(
@@ -1429,7 +1429,7 @@ No necesitas afirmar que el proyecto ya soporta miles de usuarios. Una respuesta
 
 ## 19. Inventario del proyecto
 
-Este mapa cubre los archivos de aplicación y pruebas inspeccionados. Las rutas dentro de las tablas son relativas a la raíz [twick](/Users/alan/Documents/Dev/projects/twick); sirven también para buscar fuera de Codex. Los enlaces de los capítulos anteriores abren los puntos concretos del código. Las carpetas de skills, índices y dependencias son herramientas auxiliares, no funcionalidades que se ejecuten automáticamente en el producto.
+Este mapa cubre los archivos de aplicación y pruebas inspeccionados. Las rutas dentro de las tablas son relativas a la raíz [twick](/proyectos/twick); sirven también para buscar fuera de Codex. Los enlaces de los capítulos anteriores abren los puntos concretos del código. Las carpetas de skills, índices y dependencias son herramientas auxiliares, no funcionalidades que se ejecuten automáticamente en el producto.
 
 ### 19.1 Entrada, configuración y páginas
 
