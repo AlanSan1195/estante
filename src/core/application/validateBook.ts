@@ -5,8 +5,8 @@ import {
   collectQuestions,
   walkBlocks,
   walkInlines,
-} from '../domain/book';
-import { type BuildWarning, warning } from '../domain/warnings';
+} from "../domain/book";
+import { type BuildWarning, warning } from "../domain/warnings";
 
 /** Comprobaciones de estructura que no dependen de adaptadores. */
 export function validateBook(book: Book): BuildWarning[] {
@@ -14,7 +14,9 @@ export function validateBook(book: Book): BuildWarning[] {
   const slug = book.slug;
 
   if (book.chapters.length === 0) {
-    warnings.push(warning('empty-book', slug, 'El documento no produjo ningún capítulo.'));
+    warnings.push(
+      warning("empty-book", slug, "El documento no produjo ningún capítulo."),
+    );
     return warnings;
   }
 
@@ -24,19 +26,21 @@ export function validateBook(book: Book): BuildWarning[] {
       if (!entry.target) {
         warnings.push(
           warning(
-            'toc-unresolved',
+            "toc-unresolved",
             slug,
             `El índice enlaza a "#${entry.slug}" (${entry.label}), que no existe.`,
           ),
         );
       }
     }
-    const linked = new Set(book.toc.map((entry) => entry.target?.chapterId).filter(Boolean));
+    const linked = new Set(
+      book.toc.map((entry) => entry.target?.chapterId).filter(Boolean),
+    );
     for (const chapter of book.chapters) {
       if (chapter.number !== null && !linked.has(chapter.id)) {
         warnings.push(
           warning(
-            'toc-missing-chapter',
+            "toc-missing-chapter",
             slug,
             `El capítulo ${chapter.number} "${chapter.title}" no aparece en el índice del MD.`,
           ),
@@ -46,13 +50,15 @@ export function validateBook(book: Book): BuildWarning[] {
   }
 
   // Numeración consecutiva de capítulos.
-  const numbers = book.chapters.map((c) => c.number).filter((n): n is number => n !== null);
+  const numbers = book.chapters
+    .map((c) => c.number)
+    .filter((n): n is number => n !== null);
   numbers.forEach((n, i) => {
     const expected = (numbers[0] ?? 1) + i;
     if (n !== expected) {
       warnings.push(
         warning(
-          'chapter-numbering',
+          "chapter-numbering",
           slug,
           `Se esperaba el capítulo ${expected} y aparece el ${n}.`,
         ),
@@ -65,10 +71,10 @@ export function validateBook(book: Book): BuildWarning[] {
     walkBlocks(chapter.blocks, (block) => {
       for (const inlines of blockInlines(block)) {
         walkInlines(inlines, (node) => {
-          if (node.type === 'anchor' && !node.target) {
+          if (node.type === "anchor" && !node.target) {
             warnings.push(
               warning(
-                'anchor-unresolved',
+                "anchor-unresolved",
                 slug,
                 `Ancla "#${node.slug}" sin destino (capítulo "${chapter.title}").`,
               ),
@@ -83,16 +89,16 @@ export function validateBook(book: Book): BuildWarning[] {
   if (collectQuestions(book).length === 0) {
     warnings.push(
       warning(
-        'no-questions',
+        "no-questions",
         slug,
-        'Sin banco de preguntas (**N. ¿…?** respuesta): Práctica no tendrá tarjetas de este libro.',
+        "Sin banco de preguntas (**N. ¿…?** respuesta): Práctica no tendrá tarjetas de este libro.",
       ),
     );
   }
   if (collectGlossary(book).length === 0) {
     warnings.push(
       warning(
-        'no-glossary',
+        "no-glossary",
         slug,
         'Sin glosario (tabla bajo un encabezado "Glosario"): los términos no tendrán definición al tocarlos.',
       ),

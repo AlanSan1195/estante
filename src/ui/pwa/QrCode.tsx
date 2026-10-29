@@ -1,14 +1,20 @@
-import { useMemo } from 'react';
-import { encode } from 'uqr';
+import { useMemo } from "react";
+import { encode } from "uqr";
 
 /**
  * Código QR como SVG (un solo `path`), con margen de 4 módulos. Usa los colores del tema: el
  * fondo es claro y los módulos oscuros en ambos temas, porque las cámaras leen mejor ese contraste.
  */
-export function QrCode({ value, size = 184 }: { value: string; size?: number }) {
+export function QrCode({
+  value,
+  size = 184,
+}: {
+  value: string;
+  size?: number;
+}) {
   const { path, side } = useMemo(() => {
-    const qr = encode(value, { ecc: 'M', border: 4 });
-    let d = '';
+    const qr = encode(value, { ecc: "M", border: 4 });
+    let d = "";
     qr.data.forEach((row, y) => {
       row.forEach((dark, x) => {
         if (dark) d += `M${x} ${y}h1v1h-1z`;

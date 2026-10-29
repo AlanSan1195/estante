@@ -10,6 +10,7 @@ Genera el libro de estudio del proyecto indicado en los argumentos: una ruta loc
 Sigue al pie de la letra `docs/generar-libro.md` de este repo. Ese archivo es la única fuente del procedimiento y también lo usan otros agentes. El formato exacto está en `docs/formato-libro.md`.
 
 Puntos que no se negocian:
+
 - Escribe solo `projects/INFO_PROYECT_<NOMBRE>.md` (y, si hay diagramas, `.estante-cache/diagrams` vía `bun run build`). No toques el código de la app.
 - Copia el código desde los archivos reales. Cada afirmación importante lleva una referencia `ruta:línea` comprobada.
 - Termina con `bun run books:check --strict` sin avisos.
