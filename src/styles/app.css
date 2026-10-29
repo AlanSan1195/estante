@@ -617,19 +617,13 @@ a:active .cover {
   margin-top: 6px;
 }
 
-.home-hero.is-loading {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 20px;
-  padding: 20px;
-  border-radius: 28px;
+.home-hero.is-loading .home-hero-card {
   background: var(--card-bg);
 }
 
-.home-hero-cover-skeleton {
-  aspect-ratio: 2 / 3;
-  border-radius: 6px;
+.cover.is-placeholder {
   background: var(--card-strong);
+  box-shadow: none;
 }
 
 .home-hero.is-welcome {

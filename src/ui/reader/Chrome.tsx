@@ -9,7 +9,7 @@ import { AnnotationsSheet } from './AnnotationsSheet';
 import { bookmarksOnPage } from './bookmarks';
 import { jumpLabel, pageLabel } from './format';
 import { GlossarySheet } from './GlossarySheet';
-import { ReaderMenu } from './ReaderMenu';
+import { MENU_EXIT_MS, ReaderMenu } from './ReaderMenu';
 import { Scrubber } from './Scrubber';
 import { SearchSheet } from './SearchSheet';
 import { NoteSheetBody, SelectionToolbar } from './SelectionToolbar';
@@ -17,6 +17,7 @@ import { SettingsSheet } from './SettingsSheet';
 import { Sheet } from './Sheet';
 import { TermPopover } from './TermPopover';
 import { TocSheet } from './TocSheet';
+import { usePresence } from './usePresence';
 import { Viewer } from './Viewer';
 
 /**
@@ -36,6 +37,8 @@ export function Chrome({ engine, title }: { engine: ReaderEngine | null; title: 
   const openViewer = useReader((s) => s.openViewer);
   useStudy((s) => s.bookmarks);
   const marked = position ? bookmarksOnPage(engine).length > 0 : false;
+  // El menú sigue montado mientras sus piezas vuelven al botón ≡.
+  const menu = usePresence(sheet === 'menu', MENU_EXIT_MS);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -126,7 +129,7 @@ export function Chrome({ engine, title }: { engine: ReaderEngine | null; title: 
 
       <SelectionToolbar engine={engine} />
       <TermPopover />
-      {sheet === 'menu' ? <ReaderMenu title={title} engine={engine} /> : null}
+      {menu.mounted ? <ReaderMenu title={title} engine={engine} closing={menu.closing} /> : null}
       {sheet === 'toc' ? <TocSheet engine={engine} /> : null}
       {sheet === 'settings' ? <SettingsSheet /> : null}
       {sheet === 'annotations' ? <AnnotationsSheet engine={engine} /> : null}

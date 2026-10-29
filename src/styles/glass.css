@@ -207,6 +207,12 @@
   height: 48px;
 }
 
+/* Con el menú abierto el botón se funde en él, y reaparece cuando las piezas vuelven. */
+.rc-menu-button[aria-expanded="true"] {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
 /* ------------------------------------------------------------------ recorrido rápido -- */
 
 .rc-scrubber {
@@ -306,15 +312,60 @@
   width: min(360px, calc(100vw - 28px - var(--safe-left) - var(--safe-right)));
   display: grid;
   gap: 10px;
-  transform-origin: 0 100%;
-  animation: rc-menu-in 0.42s var(--ease-spring);
 }
 
-@keyframes rc-menu-in {
-  from {
+/*
+ * Como en Apple Books: cada pieza sale del botón ≡ (abajo a la izquierda) pequeña, transparente y
+ * desenfocada, y sube a su sitio con un resorte; en cascada de arriba abajo, y las de arriba viajan
+ * más. Al cerrar vuelven al botón en orden inverso. ReaderMenu pone `--i` (0 = Contenido).
+ */
+.rc-menu > * {
+  --rise: calc((5 - var(--i)) * 14px + 18px);
+  transform-origin: 0 100%;
+  animation: rc-menu-item-in 0.52s var(--ease-spring) calc(var(--i) * 38ms) backwards;
+}
+
+@keyframes rc-menu-item-in {
+  0% {
     opacity: 0;
-    transform: scale(0.6) translateY(20px);
+    transform: translateY(var(--rise)) scale(0.6);
+    filter: blur(6px);
   }
+  45% {
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* La salida dura 4 × 32 ms + 240 ms: MENU_EXIT_MS en ReaderMenu.tsx. */
+.rc-menu.is-closing > * {
+  animation: rc-menu-item-out 0.24s cubic-bezier(0.4, 0, 1, 1) calc((4 - var(--i)) * 32ms) forwards;
+}
+
+@keyframes rc-menu-item-out {
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--rise) * 0.5)) scale(0.72);
+    filter: blur(5px);
+  }
+}
+
+.rc-backdrop.is-closing {
+  animation: rc-fade-out 0.3s var(--ease-out) forwards;
+}
+
+@keyframes rc-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Mientras sale, los toques pasan a lo que hay debajo. */
+.rc-layer > .is-closing {
+  pointer-events: none;
 }
 
 .rc-pill {
@@ -1116,7 +1167,12 @@ fieldset.rc-segmented:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rc-menu,
+  .rc-menu > *,
+  .rc-backdrop.is-closing {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+
   .rc-sheet,
   .rc-back-pill,
   .rc-toast {

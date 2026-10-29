@@ -29,11 +29,11 @@ const { title, cover, background } = Astro.props;
     <div slot="fallback" class="reader-fallback" aria-label="Cargando libro"></div>
   </Reader>
   {/*
-    Portada de apertura: comparte nombre de transición con la portada del estante, así que al
-    abrir el libro se expande hasta el centro y se desvanece cuando el lector está listo. Al salir
-    vuelve a aparecer para "cerrar el libro" hacia su sitio en el estante.
+    Portada de apertura, a pantalla completa sobre el color del libro: al abrir desde el estante, la
+    portada crece hasta aquí (ui/bookTransition.ts) y esto se funde con la página cuando el lector
+    está listo. También hace de pantalla de carga si se entra directamente a /leer/<slug>.
   */}
-  <div class="reader-intro" transition:name={`book-${slug}`} style={{ background }} aria-hidden="true">
+  <div class="reader-intro" style={{ background }} aria-hidden="true">
     <img src={cover} alt="" width="400" height="600" decoding="async" />
   </div>
 </AppLayout>
@@ -48,42 +48,46 @@ const { title, cover, background } = Astro.props;
   .reader-intro {
     position: fixed;
     z-index: 60;
-    left: 50%;
-    top: 50%;
-    width: min(70vw, calc(62dvh * 2 / 3), 420px);
-    aspect-ratio: 2 / 3;
-    border-radius: 4px 9px 9px 4px;
-    overflow: hidden;
-    transform: translate(-50%, -50%);
-    box-shadow:
-      0 2px 3px rgb(0 0 0 / 0.18),
-      0 24px 60px rgb(0 0 0 / 0.38);
+    inset: 0;
     pointer-events: none;
     transition:
-      opacity 0.45s var(--ease-out) 0.1s,
-      transform 0.6s var(--ease-out) 0.1s;
+      opacity 0.28s var(--ease-out),
+      transform 0.28s var(--ease-out);
   }
 
   .reader-intro img {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
-  body:has(.reader[data-ready="true"]) .reader-intro {
+  /* Se funde cuando el lector está listo, pero no mientras la portada aún está creciendo. */
+  html:not([data-astro-transition]) body:has(.reader[data-ready="true"]) .reader-intro {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.12);
+    transform: scale(1.04);
   }
 
-  html[data-closing] .reader-intro {
-    opacity: 1 !important;
-    transform: translate(-50%, -50%) !important;
-    transition: none !important;
+  /*
+   * Al cerrar, la página responde al toque mientras se descarga el estante: se aparta un poco y
+   * redondea las esquinas; la transición sigue desde ahí hasta la portada.
+   */
+  html[data-closing] .reader {
+    transform: scale(0.94);
+    border-radius: 22px;
+    transition:
+      transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html[data-closing] .rc-layer {
+    opacity: 0;
+    transition: opacity 0.16s var(--ease-out);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reader-intro {
+    .reader-intro,
+    html[data-closing] .reader {
       transition-duration: 0.01s;
     }
   }

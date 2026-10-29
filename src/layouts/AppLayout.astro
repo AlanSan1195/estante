@@ -9,6 +9,7 @@ import '@fontsource-variable/inter/index.css';
 import '../styles/tokens.css';
 import '../styles/glass.css';
 import '../styles/pwa.css';
+import '../styles/transitions.css';
 import { ClientRouter } from 'astro:transitions';
 import TabBar from '../components/TabBar.astro';
 import type { Tab } from '../components/tabs';
@@ -69,5 +70,10 @@ const {
     <slot />
     {tab && <TabBar active={tab} />}
     <PwaLayer client:only="react" transition:persist="pwa" />
+    <script>
+      import { installBookTransition } from '../ui/bookTransition';
+
+      installBookTransition();
+    </script>
   </body>
 </html>

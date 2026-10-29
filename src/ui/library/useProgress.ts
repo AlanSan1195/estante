@@ -27,8 +27,3 @@ export function useAllProgress() {
 export function readerHref(slug: string, blockId?: string): string {
   return blockId ? `/leer/${slug}?b=${encodeURIComponent(blockId)}` : `/leer/${slug}`;
 }
-
-/** Nombre de la transición compartida portada ↔ lector (debe coincidir con leer/[slug].astro). */
-export function coverTransitionName(slug: string): string {
-  return `book-${slug}`;
-}

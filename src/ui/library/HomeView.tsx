@@ -43,13 +43,19 @@ export default function HomeView({
     );
   }
 
-  // Mientras carga IndexedDB: esqueleto con la misma altura para que nada salte.
+  // Mientras carga IndexedDB: esqueleto con la misma forma (y los mismos elementos) que "Continuar
+  // leyendo", para que nada salte y React conserve el hueco de la portada al pintarla: al cerrar un
+  // libro, la página aterriza en ese hueco (ui/bookTransition.ts) y la transición no se corta.
   if (!selection || !progress) {
     return (
       <>
         <section className="home-hero is-loading" aria-hidden="true">
-          <span className="home-hero-cover-skeleton" />
-          <div className="home-hero-body" />
+          <p className="home-kicker">{"\u00a0"}</p>
+          {/* biome-ignore lint/a11y/useValidAnchor: es el mismo <a> que la tarjeta real, aún sin destino */}
+          <a className="home-hero-card">
+            <BookCover book={null} size="hero" />
+            <div className="home-hero-body" />
+          </a>
         </section>
         <BookRow
           title="En tu estante"

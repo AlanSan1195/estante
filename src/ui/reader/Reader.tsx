@@ -139,7 +139,8 @@ export default function Reader({ slug, title }: ReaderProps) {
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') flush();
     };
-    // Al salir con la transición de Astro, la portada vuelve a cubrir el lector para "cerrar el libro".
+    // Al salir con la transición de Astro, la página se aparta enseguida (data-closing, en
+    // leer/[slug].astro) y luego se encoge hasta su portada (ui/bookTransition.ts).
     const onLeave = () => {
       flush();
       document.documentElement.dataset.closing = 'true';

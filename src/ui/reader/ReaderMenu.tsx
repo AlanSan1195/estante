@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { ReaderEngine } from '../../reader-engine/engine';
 import { GlassButton } from '../glass/GlassButton';
 import {
@@ -14,8 +15,25 @@ import { useStudy } from '../stores/studyStore';
 import { bookmarksOnPage, toggleBookmark } from './bookmarks';
 import { percentLabel } from './format';
 
-/** Menú de píldoras de vidrio que sale del botón ≡ (como Apple Books). */
-export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEngine | null }) {
+/** Lo que dura la salida en cascada (glass.css: `.rc-menu.is-closing`); Chrome lo desmonta después. */
+export const MENU_EXIT_MS = 380;
+
+/** Orden de cada pieza en la cascada (`--i` en glass.css). */
+const order = (i: number) => ({ '--i': i }) as CSSProperties;
+
+/**
+ * Menú de píldoras de vidrio que sale del botón ≡ (como Apple Books): las piezas aparecen en
+ * cascada de arriba abajo y, con `closing`, vuelven al botón en orden inverso.
+ */
+export function ReaderMenu({
+  title,
+  engine,
+  closing = false,
+}: {
+  title: string;
+  engine: ReaderEngine | null;
+  closing?: boolean;
+}) {
   const position = useReader((s) => s.position);
   const openSheet = useReader((s) => s.openSheet);
   const showToast = useReader((s) => s.showToast);
@@ -44,11 +62,22 @@ export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEng
 
   return (
     <>
-      <div className="rc-backdrop" onClick={() => openSheet(null)} aria-hidden="true" />
-      <div className="rc-menu" role="dialog" aria-label="Menú del libro" data-testid="reader-menu">
+      <div
+        className={`rc-backdrop${closing ? ' is-closing' : ''}`}
+        onClick={() => openSheet(null)}
+        aria-hidden="true"
+      />
+      <div
+        className={`rc-menu${closing ? ' is-closing' : ''}`}
+        role="dialog"
+        aria-label="Menú del libro"
+        data-testid="reader-menu"
+        inert={closing}
+      >
         <button
           type="button"
           className="glass rc-pill"
+          style={order(0)}
           data-testid="menu-toc"
           onClick={() => openSheet('toc')}
         >
@@ -59,6 +88,7 @@ export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEng
         <button
           type="button"
           className="glass rc-pill"
+          style={order(1)}
           data-testid="menu-annotations"
           onClick={() => openSheet('annotations')}
         >
@@ -68,6 +98,7 @@ export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEng
         <button
           type="button"
           className="glass rc-pill"
+          style={order(2)}
           data-testid="menu-search"
           onClick={() => openSheet('search')}
         >
@@ -77,6 +108,7 @@ export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEng
         <button
           type="button"
           className="glass rc-pill"
+          style={order(3)}
           data-testid="menu-settings"
           onClick={() => openSheet('settings')}
         >
@@ -85,7 +117,7 @@ export function ReaderMenu({ title, engine }: { title: string; engine: ReaderEng
             <small>A</small>A
           </span>
         </button>
-        <div className="rc-menu-row">
+        <div className="rc-menu-row" style={order(4)}>
           <GlassButton aria-label="Compartir" onClick={share}>
             <ShareIcon />
           </GlassButton>

@@ -1,0 +1,64 @@
+/*
+ * Portada ↔ lector (src/ui/bookTransition.ts). Durante la navegación solo dos elementos se llaman
+ * `book-active`: la portada del estante y, en el lector, la portada a pantalla completa (al abrir)
+ * o la propia página (al cerrar). Va en el layout porque tiene que estar en las dos páginas: cuando
+ * esto se anima, html[data-view] ya es el de la página de destino.
+ */
+
+::view-transition-group(book-active) {
+  /* Por encima de la barra de pestañas, que no se anima. */
+  z-index: 2;
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+::view-transition-old(book-active),
+::view-transition-new(book-active) {
+  height: 100%;
+}
+
+/*
+ * Abrir: la portada crece hasta la del lector, que ya la pinta a pantalla completa sobre el color
+ * del libro. Basta con la imagen nueva recortada al tamaño del grupo: en cada instante la portada
+ * ocupa todo el ancho y el color del libro rellena arriba y abajo.
+ */
+:root[data-view="reader"]::view-transition-old(book-active) {
+  animation: none;
+  opacity: 0;
+}
+
+:root[data-view="reader"]::view-transition-new(book-active) {
+  animation: none;
+  object-fit: cover;
+}
+
+/*
+ * Cerrar: la página se encoge hasta su portada en el estante y, mientras, se desvanece encima de
+ * ella. La portada va opaca debajo (sin fundido cruzado: dos imágenes a medias sobre el fondo
+ * oscuro se ven lavadas).
+ */
+:root[data-view="shelf"]::view-transition-old(book-active) {
+  z-index: 1;
+  object-fit: cover;
+  animation: book-page-out 0.32s ease-in-out both;
+}
+
+:root[data-view="shelf"]::view-transition-new(book-active) {
+  object-fit: contain;
+  animation: none;
+}
+
+@keyframes book-page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(book-active),
+  ::view-transition-old(book-active),
+  ::view-transition-new(book-active) {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+}
