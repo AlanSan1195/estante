@@ -46,4 +46,10 @@ export const THEME_INFO: Record<
     dark: { bg: '#1b1a18', ink: '#f1e6d2' },
     weight: 500,
   },
+  dev: {
+    name: 'Dev',
+    light: { bg: '#f4f6f1', ink: '#127a46' },
+    dark: { bg: '#0d1110', ink: '#5ee08f' },
+    weight: 400,
+  },
 };

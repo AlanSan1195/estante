@@ -255,6 +255,43 @@ export function dragPoint(
   return liftedPoint(size, corner, x, residualY + delta.y * 0.5);
 }
 
+/** Distancia (px del dedo) en la que el pliegue alcanza al dedo: mínimo y fracción del hueco. */
+const CATCH_UP_MIN = 24;
+const CATCH_UP_FRACTION = 0.45;
+
+/**
+ * Traduce el arrastre a P cuando el dedo agarró la hoja en `start` (en cualquier punto, no solo en
+ * la esquina). El pliegue sale del borde (adelante) o del lomo (atrás) y alcanza al dedo en los
+ * primeros píxeles del gesto; desde ahí queda justo bajo el dedo. Así la hoja responde en cuanto el
+ * dedo empieza a deslizar, sin importar dónde se apoyó.
+ *
+ * La inclinación depende de la altura del agarre: en el centro vertical el pliegue es recto (gira
+ * todo el borde); cerca de arriba o abajo se levanta la esquina, como en `liftedPoint`.
+ */
+export function followPoint(
+  size: PageSize,
+  corner: Corner,
+  direction: TurnDirection,
+  start: Point,
+  finger: Point,
+): Point {
+  const { width: w, height: h } = size;
+  const from = direction === 'forward' ? w : 0;
+  const gap = from - start.x;
+  const travel = direction === 'forward' ? start.x - finger.x : finger.x - start.x;
+  const catchUp = Math.max(CATCH_UP_MIN, Math.abs(gap) * CATCH_UP_FRACTION);
+  const lag = (1 - clamp(travel / catchUp, 0, 1)) ** 2;
+  const crease = clamp(finger.x + gap * lag, 0, w);
+  // Con el pliegue vertical en `crease`, P (la esquina reflejada) queda en 2·crease − w.
+  const x = 2 * crease - w;
+  const tilt = h > 0 ? clamp(Math.abs(start.y - h / 2) / (h / 2), 0, 1) : 0;
+  const c = cornerPoint(size, corner);
+  return {
+    x,
+    y: c.y + liftSign(corner) * tilt * cornerLift(size, x) + (finger.y - start.y) * 0.5,
+  };
+}
+
 /** Recorrido de un giro automático (toque en una zona lateral): t ∈ [0,1], de la esquina al lomo. */
 export function autoTurnPoint(size: PageSize, corner: Corner, t: number): Point {
   const x = size.width - 2 * size.width * clamp(t, 0, 1);

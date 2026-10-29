@@ -5,6 +5,7 @@ export const READER_THEMES = [
   'negrita',
   'calma',
   'enfoque',
+  'dev',
 ] as const;
 export type ReaderTheme = (typeof READER_THEMES)[number];
 

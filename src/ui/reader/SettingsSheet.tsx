@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
   type Appearance,
   FONT_SCALE_STEPS,
@@ -7,7 +7,13 @@ import {
   type PageTurn,
   READER_THEMES,
 } from '../../core/domain/preferences';
-import { FONT_STACKS, resolveMode, systemPrefersDark } from '../../reader-engine/typography';
+import {
+  bodyFontStack,
+  FONT_STACKS,
+  resolveMode,
+  systemPrefersDark,
+} from '../../reader-engine/typography';
+import { AutoModeIcon, MoonIcon, SlidersIcon, SunIcon } from '../glass/icons';
 import { usePrefs } from '../stores/prefsStore';
 import { useReader } from '../stores/readerStore';
 import { Sheet } from './Sheet';
@@ -24,14 +30,16 @@ function Segmented<T extends string>({
   options,
   onChange,
   label,
+  disabled = false,
 }: {
   value: T;
   options: Option<T>[];
   onChange(value: T): void;
   label: string;
+  disabled?: boolean;
 }) {
   return (
-    <fieldset className="rc-segmented">
+    <fieldset className="rc-segmented" disabled={disabled}>
       <legend className="visually-hidden">{label}</legend>
       {options.map((option) => (
         <button
@@ -128,10 +136,10 @@ function Row({
   );
 }
 
-const MODES: Option<Appearance>[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'light', label: 'Claro' },
-  { value: 'dark', label: 'Oscuro' },
+const MODES: { value: Appearance; label: string; icon: ReactNode }[] = [
+  { value: 'auto', label: 'Auto', icon: <AutoModeIcon /> },
+  { value: 'light', label: 'Claro', icon: <SunIcon /> },
+  { value: 'dark', label: 'Oscuro', icon: <MoonIcon /> },
 ];
 
 const FONTS: Option<FontFamily>[] = [
@@ -156,18 +164,41 @@ const TURNS: Option<PageTurn>[] = [
   { value: 'scroll', label: 'Desplazar' },
 ];
 
+/**
+ * Temas y ajustes, al estilo de Apple Books: una hoja baja (la página sigue visible detrás) con
+ * tamaño, modo y temas; el resto de ajustes vive en la subpantalla "Personalizar".
+ */
 export function SettingsSheet() {
+  const [view, setView] = useState<'themes' | 'customize'>('themes');
+  const openSheet = useReader((s) => s.openSheet);
+  return (
+    <Sheet
+      title={view === 'themes' ? 'Temas y ajustes' : 'Personalizar'}
+      testId="settings-sheet"
+      live
+      onBack={view === 'customize' ? () => setView('themes') : undefined}
+      onClose={() => openSheet(null)}
+    >
+      {view === 'themes' ? (
+        <ThemesView onCustomize={() => setView('customize')} />
+      ) : (
+        <CustomizeView />
+      )}
+    </Sheet>
+  );
+}
+
+function ThemesView({ onCustomize }: { onCustomize(): void }) {
   const prefs = usePrefs((s) => s.prefs);
   const update = usePrefs((s) => s.update);
   const stepFont = usePrefs((s) => s.stepFont);
-  const openSheet = useReader((s) => s.openSheet);
   const mode = resolveMode(prefs.appearance, systemPrefersDark());
   const minScale = FONT_SCALE_STEPS[0];
   const maxScale = FONT_SCALE_STEPS[FONT_SCALE_STEPS.length - 1];
 
   return (
-    <Sheet title="Temas y ajustes" testId="settings-sheet" onClose={() => openSheet(null)}>
-      <div className="rc-settings">
+    <div className="rc-settings is-themes">
+      <div className="rc-quick-row">
         <div className="rc-size-row">
           <button
             type="button"
@@ -188,140 +219,164 @@ export function SettingsSheet() {
             A
           </button>
         </div>
-
-        <fieldset className="rc-themes">
-          <legend className="visually-hidden">Temas</legend>
-          {READER_THEMES.map((theme) => {
-            const info = THEME_INFO[theme];
-            const swatch = info[mode];
-            return (
-              <button
-                key={theme}
-                type="button"
-                className="rc-theme"
-                aria-pressed={prefs.theme === theme}
-                data-theme-option={theme}
-                onClick={() => update({ theme })}
-              >
-                <span
-                  className="rc-theme-swatch"
-                  style={{
-                    background: swatch.bg,
-                    color: swatch.ink,
-                    fontFamily: FONT_STACKS[prefs.fontFamily],
-                    fontWeight: info.weight,
-                  }}
-                >
-                  Aa
-                </span>
-                <span>{info.name}</span>
-              </button>
-            );
-          })}
+        <fieldset className="rc-modes">
+          <legend className="visually-hidden">Modo</legend>
+          {MODES.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              aria-label={option.label}
+              title={option.label}
+              aria-pressed={prefs.appearance === option.value}
+              onClick={() => update({ appearance: option.value })}
+            >
+              {option.icon}
+            </button>
+          ))}
         </fieldset>
-
-        <p className="rc-group-title">Apariencia</p>
-        <div className="rc-group">
-          <Row label="Modo">
-            <Segmented
-              label="Modo"
-              value={prefs.appearance}
-              options={MODES}
-              onChange={(appearance) => update({ appearance })}
-            />
-          </Row>
-        </div>
-
-        <p className="rc-group-title">Personalizar</p>
-        <div className="rc-group">
-          <Row label="Fuente" stacked>
-            <Segmented
-              label="Fuente"
-              value={prefs.fontFamily}
-              options={FONTS}
-              onChange={(fontFamily) => update({ fontFamily })}
-            />
-          </Row>
-          <Row label="Interlineado">
-            <Stepper
-              label="Interlineado"
-              value={prefs.lineHeight}
-              min={1.3}
-              max={2}
-              step={0.1}
-              format={(v) => v.toFixed(1)}
-              onChange={(lineHeight) => update({ lineHeight })}
-            />
-          </Row>
-          <Row label="Márgenes" stacked>
-            <Segmented
-              label="Márgenes"
-              value={prefs.margins}
-              options={MARGINS}
-              onChange={(margins) => update({ margins })}
-            />
-          </Row>
-          <Row label="Justificar">
-            <Switch
-              label="Justificar"
-              checked={prefs.justify}
-              onChange={(justify) => update({ justify })}
-            />
-          </Row>
-          <Row label="Texto en negrita">
-            <Switch
-              label="Texto en negrita"
-              checked={prefs.bold}
-              onChange={(bold) => update({ bold })}
-            />
-          </Row>
-        </div>
-
-        <p className="rc-group-title">Paso de página</p>
-        <div className="rc-group">
-          <Row label="Estilo" stacked>
-            <Segmented
-              label="Estilo de paso de página"
-              value={prefs.pageTurn}
-              options={TURNS}
-              onChange={(pageTurn) => update({ pageTurn })}
-            />
-          </Row>
-        </div>
-
-        <p className="rc-group-title">Código</p>
-        <div className="rc-group">
-          <Row label="Ajustar líneas">
-            <Switch
-              label="Ajustar líneas de código"
-              checked={prefs.codeWrap}
-              onChange={(codeWrap) => update({ codeWrap })}
-            />
-          </Row>
-          <Row label="Tamaño">
-            <Stepper
-              label="Tamaño del código"
-              value={prefs.codeScale}
-              min={0.65}
-              max={1.1}
-              step={0.05}
-              format={(v) => `${Math.round(v * 100)} %`}
-              onChange={(codeScale) => update({ codeScale })}
-            />
-          </Row>
-        </div>
-
-        <p className="rc-group-title">Estudio</p>
-        <div className="rc-group">
-          <Row label="Ocultar respuestas">
-            <Switch
-              label="Ocultar respuestas del banco de preguntas"
-              checked={prefs.hideAnswers}
-              onChange={(hideAnswers) => update({ hideAnswers })}
-            />
-          </Row>
-        </div>
       </div>
-    </Sheet>
+
+      <fieldset className="rc-themes">
+        <legend className="visually-hidden">Temas</legend>
+        {READER_THEMES.map((theme) => {
+          const info = THEME_INFO[theme];
+          const swatch = info[mode];
+          return (
+            <button
+              key={theme}
+              type="button"
+              className="rc-theme"
+              aria-pressed={prefs.theme === theme}
+              data-theme-option={theme}
+              onClick={() => update({ theme })}
+              style={{
+                background: swatch.bg,
+                color: swatch.ink,
+                fontFamily: bodyFontStack({ theme, fontFamily: prefs.fontFamily }),
+                fontWeight: info.weight,
+              }}
+            >
+              <span className="rc-theme-aa" aria-hidden="true">
+                Aa
+              </span>
+              <span>{info.name}</span>
+            </button>
+          );
+        })}
+      </fieldset>
+
+      <button
+        type="button"
+        className="rc-customize"
+        data-testid="settings-customize"
+        onClick={onCustomize}
+      >
+        <SlidersIcon />
+        Personalizar
+      </button>
+    </div>
+  );
+}
+
+function CustomizeView() {
+  const prefs = usePrefs((s) => s.prefs);
+  const update = usePrefs((s) => s.update);
+  const themeFont = prefs.theme === 'dev';
+
+  return (
+    <div className="rc-settings">
+      <div className="rc-group">
+        <Row label="Fuente" stacked>
+          <Segmented
+            label="Fuente"
+            value={prefs.fontFamily}
+            options={FONTS}
+            disabled={themeFont}
+            onChange={(fontFamily) => update({ fontFamily })}
+          />
+          {themeFont ? (
+            <small className="rc-row-note">El tema Dev usa su propia fuente pixel.</small>
+          ) : null}
+        </Row>
+        <Row label="Interlineado">
+          <Stepper
+            label="Interlineado"
+            value={prefs.lineHeight}
+            min={1.3}
+            max={2}
+            step={0.1}
+            format={(v) => v.toFixed(1)}
+            onChange={(lineHeight) => update({ lineHeight })}
+          />
+        </Row>
+        <Row label="Márgenes" stacked>
+          <Segmented
+            label="Márgenes"
+            value={prefs.margins}
+            options={MARGINS}
+            onChange={(margins) => update({ margins })}
+          />
+        </Row>
+        <Row label="Justificar">
+          <Switch
+            label="Justificar"
+            checked={prefs.justify}
+            onChange={(justify) => update({ justify })}
+          />
+        </Row>
+        <Row label="Texto en negrita">
+          <Switch
+            label="Texto en negrita"
+            checked={prefs.bold}
+            onChange={(bold) => update({ bold })}
+          />
+        </Row>
+      </div>
+
+      <p className="rc-group-title">Paso de página</p>
+      <div className="rc-group">
+        <Row label="Estilo" stacked>
+          <Segmented
+            label="Estilo de paso de página"
+            value={prefs.pageTurn}
+            options={TURNS}
+            onChange={(pageTurn) => update({ pageTurn })}
+          />
+        </Row>
+      </div>
+
+      <p className="rc-group-title">Código</p>
+      <div className="rc-group">
+        <Row label="Ajustar líneas">
+          <Switch
+            label="Ajustar líneas de código"
+            checked={prefs.codeWrap}
+            onChange={(codeWrap) => update({ codeWrap })}
+          />
+        </Row>
+        <Row label="Tamaño">
+          <Stepper
+            label="Tamaño del código"
+            value={prefs.codeScale}
+            min={0.65}
+            max={1.1}
+            step={0.05}
+            format={(v) => `${Math.round(v * 100)} %`}
+            onChange={(codeScale) => update({ codeScale })}
+          />
+        </Row>
+      </div>
+
+      <p className="rc-group-title">Estudio</p>
+      <div className="rc-group">
+        <Row label="Ocultar respuestas">
+          <Switch
+            label="Ocultar respuestas del banco de preguntas"
+            checked={prefs.hideAnswers}
+            onChange={(hideAnswers) => update({ hideAnswers })}
+          />
+        </Row>
+      </div>
+    </div>
   );
 }

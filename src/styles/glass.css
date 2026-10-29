@@ -287,6 +287,12 @@
   animation: rc-fade-in 0.25s var(--ease-out);
 }
 
+.rc-backdrop.is-clear {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 @keyframes rc-fade-in {
   from {
     opacity: 0;
@@ -389,6 +395,19 @@
   touch-action: pan-y;
 }
 
+/* Temas y ajustes: más baja, para que la página quede a la vista mientras se cambia. */
+.rc-sheet.is-live {
+  max-height: min(64dvh, 560px);
+}
+
+.rc-sheet.is-live .rc-sheet-header {
+  padding-bottom: 8px;
+}
+
+.rc-sheet.is-live .rc-sheet-body {
+  padding-bottom: 12px;
+}
+
 /* La hoja recibe el foco al abrirse (lectores de pantalla); el contenedor no necesita anillo. */
 .rc-sheet:focus {
   outline: none;
@@ -442,6 +461,15 @@
   justify-content: space-between;
   gap: 12px;
   padding: 2px 18px 12px 22px;
+}
+
+.rc-sheet-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-sheet-back svg {
+  transform: rotate(180deg);
 }
 
 .rc-sheet-header h2 {
@@ -592,23 +620,38 @@
   background: color-mix(in srgb, var(--glass-ink) 7%, transparent);
 }
 
-/* Temas y ajustes. */
+/* Temas y ajustes: hoja baja (la página se ve detrás) con tamaño, modo, temas y "Personalizar". */
 .rc-settings {
   display: grid;
   gap: 18px;
 }
 
-.rc-size-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.rc-settings.is-themes {
   gap: 10px;
 }
 
-.rc-size-row button {
-  height: 52px;
+.rc-quick-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.rc-size-row,
+.rc-modes {
+  display: flex;
+  height: 44px;
+  padding: 0;
+  margin: 0;
   border: 0;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--glass-ink) 8%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass-ink) 9%, transparent);
+  min-inline-size: 0;
+}
+
+.rc-size-row button {
+  flex: 1;
+  border: 0;
+  background: none;
   font-family: Georgia, serif;
   cursor: pointer;
 }
@@ -619,10 +662,43 @@
 
 .rc-size-row button:first-child {
   font-size: 16px;
+  border-right: 1px solid color-mix(in srgb, var(--glass-ink) 14%, transparent);
 }
 
 .rc-size-row button:last-child {
   font-size: 24px;
+}
+
+.rc-modes {
+  gap: 2px;
+  padding: 4px;
+}
+
+.rc-modes button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rc-modes svg {
+  width: 21px;
+  height: 21px;
+  opacity: 0.7;
+}
+
+.rc-modes button[aria-pressed="true"] {
+  background: var(--glass-strong);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.16);
+}
+
+.rc-modes button[aria-pressed="true"] svg {
+  opacity: 1;
 }
 
 .rc-themes {
@@ -631,37 +707,77 @@
   gap: 10px;
 }
 
+/* Cada tema se muestra con sus colores y su fuente; el nombre va dentro, como en Apple Books. */
 .rc-theme {
   display: grid;
+  place-content: center;
   justify-items: center;
-  gap: 6px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-
-.rc-theme-swatch {
-  width: 100%;
-  aspect-ratio: 1.15;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
+  gap: 1px;
+  height: 66px;
+  padding: 0 6px;
   border: 1px solid rgb(0 0 0 / 0.08);
-  font-size: 26px;
+  border-radius: 18px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  cursor: pointer;
   transition: box-shadow 0.2s;
 }
 
-.rc-theme[aria-pressed="true"] .rc-theme-swatch {
+.rc-theme[aria-pressed="true"] {
   box-shadow:
     0 0 0 2.5px var(--glass-strong),
     0 0 0 4.5px var(--accent);
 }
 
-.rc-theme span:last-child {
+.rc-theme-aa {
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.rc-theme > span:last-child {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* Dev es el especial: ocupa la fila entera, como una línea de terminal. */
+.rc-theme[data-theme-option="dev"] {
+  grid-column: 1 / -1;
+  grid-auto-flow: column;
+  align-items: baseline;
+  gap: 12px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.rc-theme[data-theme-option="dev"] .rc-theme-aa {
+  font-size: 20px;
+}
+
+.rc-theme[data-theme-option="dev"] > span:last-child {
+  font-size: 15px;
+}
+
+.rc-customize {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass-ink) 12%, transparent);
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.rc-customize svg {
+  width: 21px;
+  height: 21px;
+}
+
+.rc-row-note {
   font-size: 12.5px;
-  font-weight: 550;
+  color: color-mix(in srgb, var(--glass-ink) 58%, transparent);
 }
 
 .rc-group {
@@ -740,6 +856,10 @@ fieldset.rc-themes {
   font-weight: 550;
   white-space: nowrap;
   cursor: pointer;
+}
+
+fieldset.rc-segmented:disabled {
+  opacity: 0.45;
 }
 
 .rc-segmented button[aria-pressed="true"] {

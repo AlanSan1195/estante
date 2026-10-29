@@ -1,17 +1,21 @@
 import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { GlassButton } from '../glass/GlassButton';
-import { CloseIcon } from '../glass/icons';
+import { ChevronIcon, CloseIcon } from '../glass/icons';
 
 interface SheetProps {
   title: string;
   subtitle?: string;
   testId?: string;
+  /** Hoja baja y sin velo: la página se ve detrás para seguir cada cambio en vivo. */
+  live?: boolean;
+  /** Muestra "Volver" junto al título (subpantallas dentro de la misma hoja). */
+  onBack?: () => void;
   onClose(): void;
   children: ReactNode;
 }
 
 /** Hoja inferior de vidrio. Se cierra con el fondo, con Escape o arrastrando el asa hacia abajo. */
-export function Sheet({ title, subtitle, testId, onClose, children }: SheetProps) {
+export function Sheet({ title, subtitle, testId, live, onBack, onClose, children }: SheetProps) {
   const [dragY, setDragY] = useState(0);
   const start = useRef<{ y: number; id: number } | null>(null);
   const panel = useRef<HTMLElement>(null);
@@ -37,10 +41,14 @@ export function Sheet({ title, subtitle, testId, onClose, children }: SheetProps
 
   return (
     <>
-      <div className="rc-backdrop" onClick={onClose} aria-hidden="true" />
+      <div
+        className={`rc-backdrop${live ? ' is-clear' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <section
         ref={panel}
-        className="rc-sheet glass"
+        className={`rc-sheet glass${live ? ' is-live' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -56,6 +64,11 @@ export function Sheet({ title, subtitle, testId, onClose, children }: SheetProps
           onPointerCancel={onUp}
         />
         <header className="rc-sheet-header">
+          {onBack ? (
+            <GlassButton className="rc-sheet-back" aria-label="Volver" onClick={onBack}>
+              <ChevronIcon />
+            </GlassButton>
+          ) : null}
           <div>
             <h2>{title}</h2>
             {subtitle ? <p>{subtitle}</p> : null}

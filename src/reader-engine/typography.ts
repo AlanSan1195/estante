@@ -1,4 +1,4 @@
-import type { Margins, ReaderPreferences } from '../core/domain/preferences';
+import type { Margins, ReaderPreferences, ReaderTheme } from '../core/domain/preferences';
 
 /** Tamaño base del texto con fontScale = 1. */
 export const BASE_FONT_PX = 18;
@@ -12,6 +12,20 @@ export const FONT_STACKS: Record<ReaderPreferences['fontFamily'], string> = {
 };
 
 export const MONO_STACK = "'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace";
+
+/** Fuente pixel del tema Dev (public/fontmidUX.woff2, declarada en src/styles/themes.css). */
+export const DEV_FONT_STACK =
+  "'Geist Pixel Square', 'JetBrains Mono Variable', ui-monospace, monospace";
+
+/** Fuente del texto: el tema Dev impone la suya; los demás usan la elegida en Ajustes. */
+export function bodyFontStack(prefs: Pick<ReaderPreferences, 'theme' | 'fontFamily'>): string {
+  return prefs.theme === 'dev' ? DEV_FONT_STACK : FONT_STACKS[prefs.fontFamily];
+}
+
+/** Lo que un tema cambia en la paginación: Negrita el peso del texto y Dev la fuente ('' = nada). */
+export function themeLayout(theme: ReaderTheme): string {
+  return theme === 'negrita' || theme === 'dev' ? theme : '';
+}
 
 export type ColorMode = 'light' | 'dark';
 
@@ -46,7 +60,7 @@ export function applyPreferences(root: HTMLElement, prefs: ReaderPreferences): C
   root.style.setProperty('--lh', prefs.lineHeight.toFixed(2));
   root.style.setProperty('--mx', `${MARGIN_PX[prefs.margins]}px`);
   root.style.setProperty('--code-scale', prefs.codeScale.toFixed(2));
-  root.style.setProperty('--font-body', FONT_STACKS[prefs.fontFamily]);
+  root.style.setProperty('--font-body', bodyFontStack(prefs));
   root.style.setProperty('--font-mono', MONO_STACK);
   return mode;
 }
@@ -55,7 +69,7 @@ export function applyPreferences(root: HTMLElement, prefs: ReaderPreferences): C
 export async function waitForFonts(prefs: ReaderPreferences, timeoutMs = 2500): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return;
   const size = `${Math.round(BASE_FONT_PX * prefs.fontScale)}px`;
-  const family = FONT_STACKS[prefs.fontFamily].split(',')[0] ?? '';
+  const family = bodyFontStack(prefs).split(',')[0] ?? '';
   const loads = [
     document.fonts.load(`${size} ${family}`),
     document.fonts.load(`italic ${size} ${family}`),

@@ -2,26 +2,31 @@
  * Gestos del lector con Pointer Events.
  *
  * Reglas (como Apple Books):
- * - El arrastre solo empieza si el dedo se apoya dentro del 18 % de cada borde.
+ * - El arrastre empieza donde sea que se apoye el dedo: hacia la izquierda avanza, hacia la derecha
+ *   retrocede. No hace falta buscar el borde; la hoja se agarra desde cualquier punto.
  * - Un toque en el 25 % izquierdo o derecho retrocede o avanza (animado).
  * - Un toque en el centro muestra u oculta los controles.
- * - Una pulsación larga en el centro no hace nada: deja que el sistema seleccione texto.
+ * - Una pulsación larga no hace nada: deja que el sistema seleccione texto. Si con ella se
+ *   seleccionó texto, mover el dedo ajusta la selección y no gira la página. Un arrastre rápido sí
+ *   gira, y descarta la selección que el ratón pudo empezar en los primeros píxeles.
  * - Un toque sobre un elemento interactivo (enlace, código, tabla…) se delega al elemento.
  *
  * Las decisiones son funciones puras (`zoneOf`, `classifyTap`, `shouldCompleteTurn`) y se
  * prueban sin DOM. `GestureController` solo conecta esas reglas con los eventos del navegador.
  */
 
-export type Zone = 'left-edge' | 'right-edge' | 'left-tap' | 'right-tap' | 'center';
+export type Zone = 'left' | 'right' | 'center';
 export type TapAction = 'prev' | 'next' | 'center' | 'none';
 
-export const EDGE_FRACTION = 0.18;
 export const TAP_FRACTION = 0.25;
 export const TAP_MAX_MOVEMENT = 10;
 export const TAP_MAX_DURATION = 350;
 export const LONG_PRESS_MS = 450;
 export const DRAG_START_DISTANCE = 6;
 export const COMPLETE_DISTANCE_FRACTION = 0.3;
+/** Si la hoja ya se ve girada más de la mitad, basta este recorrido del dedo (px) para completar. */
+export const COMMIT_MIN_TRAVEL = 24;
+export const COMMIT_TURNED_FRACTION = 0.5;
 /** px/ms: un "flick" rápido completa el giro aunque el recorrido sea corto. */
 export const FLICK_VELOCITY = 0.45;
 
@@ -35,21 +40,15 @@ export const INTERACTIVE_SELECTOR =
 export function zoneOf(x: number, width: number): Zone {
   if (width <= 0) return 'center';
   const f = x / width;
-  if (f < EDGE_FRACTION) return 'left-edge';
-  if (f > 1 - EDGE_FRACTION) return 'right-edge';
-  if (f < TAP_FRACTION) return 'left-tap';
-  if (f > 1 - TAP_FRACTION) return 'right-tap';
+  if (f < TAP_FRACTION) return 'left';
+  if (f > 1 - TAP_FRACTION) return 'right';
   return 'center';
 }
 
-export function isEdge(zone: Zone): boolean {
-  return zone === 'left-edge' || zone === 'right-edge';
-}
-
-/** Dirección del arrastre según el borde de inicio y el sentido del movimiento. */
-export function dragDirection(zone: Zone, dx: number): 'forward' | 'backward' | null {
-  if (zone === 'right-edge' && dx < 0) return 'forward';
-  if (zone === 'left-edge' && dx > 0) return 'backward';
+/** Dirección del arrastre según el sentido del movimiento (empiece donde empiece el dedo). */
+export function dragDirection(dx: number): 'forward' | 'backward' | null {
+  if (dx < 0) return 'forward';
+  if (dx > 0) return 'backward';
   return null;
 }
 
@@ -60,6 +59,11 @@ export function dragDirection(zone: Zone, dx: number): 'forward' | 'backward' | 
  */
 export function isGuardedStart(clientX: number, guard: number): boolean {
   return guard > 0 && clientX < guard;
+}
+
+function hasTextSelection(): boolean {
+  const selection = typeof window !== 'undefined' ? window.getSelection() : null;
+  return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 }
 
 export interface TapInput {
@@ -75,11 +79,9 @@ export function classifyTap(input: TapInput): TapAction {
   if (input.delegated || input.longPress || input.hasSelection) return 'none';
   if (input.distance > TAP_MAX_MOVEMENT || input.duration > TAP_MAX_DURATION) return 'none';
   switch (input.zone) {
-    case 'left-edge':
-    case 'left-tap':
+    case 'left':
       return 'prev';
-    case 'right-edge':
-    case 'right-tap':
+    case 'right':
       return 'next';
     default:
       return 'center';
@@ -88,12 +90,20 @@ export function classifyTap(input: TapInput): TapAction {
 
 /**
  * ¿Se completa el giro al soltar? `travel` es lo recorrido en el sentido del giro (px, positivo
- * hacia completar) y `velocity` la velocidad en ese mismo sentido (px/ms).
+ * hacia completar), `velocity` la velocidad en ese mismo sentido (px/ms) y `turned` cuánto se ve
+ * girada la hoja (0–1). Si ya pasó de la mitad, no vuelve atrás salvo que el gesto fuera mínimo
+ * (un toque impreciso no debe pasar página).
  */
-export function shouldCompleteTurn(travel: number, velocity: number, width: number): boolean {
+export function shouldCompleteTurn(
+  travel: number,
+  velocity: number,
+  width: number,
+  turned = 0,
+): boolean {
   if (velocity > FLICK_VELOCITY) return true;
   if (velocity < -FLICK_VELOCITY) return false;
-  return travel > width * COMPLETE_DISTANCE_FRACTION;
+  if (travel > width * COMPLETE_DISTANCE_FRACTION) return true;
+  return travel > COMMIT_MIN_TRAVEL && turned > COMMIT_TURNED_FRACTION;
 }
 
 /** Velocidad promedio de los últimos ~100 ms. */
@@ -216,12 +226,10 @@ export class GestureController {
       this.capture(event.pointerId);
       return;
     }
-    if (zone === 'center') {
-      const active = this.active;
-      active.longTimer = setTimeout(() => {
-        active.longPress = true;
-      }, LONG_PRESS_MS);
-    }
+    const active = this.active;
+    active.longTimer = setTimeout(() => {
+      active.longPress = true;
+    }, LONG_PRESS_MS);
   };
 
   private onMove = (event: PointerEvent) => {
@@ -233,11 +241,13 @@ export class GestureController {
 
     if (!active.dragging) {
       if (Math.hypot(delta.x, delta.y) > TAP_MAX_MOVEMENT) this.clearLongPress(active);
-      if (active.guarded || !isEdge(active.zone) || Math.abs(delta.x) < DRAG_START_DISTANCE) return;
+      if (active.guarded || Math.abs(delta.x) < DRAG_START_DISTANCE) return;
       if (Math.abs(delta.y) > Math.abs(delta.x) * 1.5) return;
-      const direction = dragDirection(active.zone, delta.x);
+      if (active.longPress && hasTextSelection()) return;
+      const direction = dragDirection(delta.x);
       if (!direction || !this.handlers.canTurn(direction)) return;
       active.dragging = true;
+      window.getSelection()?.removeAllRanges();
       this.capture(event.pointerId);
       this.surface.classList.add('is-dragging');
       this.handlers.dragStart(direction, { x: active.startX, y: active.startY });
@@ -262,14 +272,13 @@ export class GestureController {
       this.handlers.dragEnd(this.tracker.velocity(), delta);
       return;
     }
-    const selection = typeof window !== 'undefined' ? window.getSelection() : null;
     const action = classifyTap({
       zone: active.zone,
       distance: Math.hypot(delta.x, delta.y),
       duration: event.timeStamp - active.startTime,
       delegated: active.delegated,
       longPress: active.longPress,
-      hasSelection: Boolean(selection && !selection.isCollapsed && selection.toString().trim()),
+      hasSelection: hasTextSelection(),
     });
     if (action !== 'none') {
       if (action === 'center') this.suppressClickUntil = event.timeStamp + 50;

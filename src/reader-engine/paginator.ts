@@ -11,6 +11,9 @@
  * `measureFlow` toca el DOM.
  */
 
+import type { ReaderTheme } from '../core/domain/preferences';
+import { themeLayout } from './typography';
+
 export interface MeasuredFragment {
   /** Distancia horizontal desde el inicio del flujo (px). */
   left: number;
@@ -148,6 +151,7 @@ export function wordsBefore(layout: ChapterLayout, anchor: PageAnchor): number {
 
 /** Clave de caché de layout: todo lo que cambia la paginación. */
 export function layoutKey(parts: {
+  theme: ReaderTheme;
   fontFamily: string;
   fontScale: number;
   lineHeight: number;
@@ -168,6 +172,7 @@ export function layoutKey(parts: {
     parts.bold ? 'b' : 'n',
     parts.codeWrap ? 'w' : 's',
     parts.codeScale.toFixed(2),
+    themeLayout(parts.theme),
     Math.round(parts.width),
     Math.round(parts.height),
   ].join('|');

@@ -18,12 +18,14 @@ export function bookCacheName(slug: string): string {
 const LATIN_FONT = /-latin-wght-(?:normal|italic)\.[\w-]+\.woff2$/;
 const FONT = /\.(?:woff2?|ttf|otf)$/;
 const COVER = /^books\/[^/]+\/cover\.(?:svg|jpe?g|png|webp)$/;
-const ROOT_ASSET = /^(?:manifest\.webmanifest|favicon\.svg|[\w-]+\.png|icons\/.+\.(?:png|svg))$/;
+/** Archivos sueltos de public/: manifest, iconos y fuentes propias (la pixel del tema Dev). */
+const ROOT_ASSET =
+  /^(?:manifest\.webmanifest|favicon\.svg|[\w-]+\.(?:png|woff2)|icons\/.+\.(?:png|svg))$/;
 
 /**
  * Elige, de los archivos de la salida del build, los que forman el app shell: páginas, JS y CSS con
- * hash, fuentes latinas, iconos, manifest, catálogo y portadas. Los capítulos, el manifest y la
- * búsqueda de cada libro no: se descargan por libro desde la Biblioteca.
+ * hash, fuentes latinas y las de public/, iconos, manifest, catálogo y portadas. Los capítulos, el
+ * manifest y la búsqueda de cada libro no: se descargan por libro desde la Biblioteca.
  *
  * @param files rutas relativas a la carpeta de salida, con `/` (p. ej. `leer/twick/index.html`).
  * @returns URLs absolutas del sitio, ordenadas y sin duplicados.

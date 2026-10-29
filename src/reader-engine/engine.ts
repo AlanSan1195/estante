@@ -25,8 +25,10 @@ import {
   computeFold,
   cornerPoint,
   dragPoint,
+  followPoint,
   type Point,
   turnedPoint,
+  turnProgress,
 } from './pageCurl';
 import {
   buildChapterLayout,
@@ -51,7 +53,13 @@ import type {
   ViewerRequest,
 } from './types';
 import { Emitter } from './types';
-import { applyPreferences, MARGIN_PX, prefersReducedMotion, waitForFonts } from './typography';
+import {
+  applyPreferences,
+  MARGIN_PX,
+  prefersReducedMotion,
+  themeLayout,
+  waitForFonts,
+} from './typography';
 
 export interface ReaderEngineOptions {
   /** Recibe atributos de tema y variables tipográficas (también la usa el chrome). */
@@ -127,6 +135,11 @@ interface TurnState {
   corner: Corner;
   /** Curl: P al empezar el arrastre (o al atrapar la animación). Deslizar: {x: offset}. */
   base: Point;
+  /**
+   * Curl: dónde agarró el dedo la hoja; el pliegue lo sigue (`followPoint`). Null tras atrapar una
+   * animación: entonces P se mueve desde `base` con `dragPoint`.
+   */
+  grab: Point | null;
   point: Point;
   animation: SpringAnimation | TimedAnimation | null;
   /** Resultado al que va la animación en curso. */
@@ -329,8 +342,8 @@ class Engine implements ReaderEngine {
         isAnimating: () => Boolean(this.turn?.animation),
         catchAnimation: () => this.catchAnimation(),
         dragStart: (direction, start) => this.dragStart(direction, start),
-        dragMove: (_point, delta) => this.dragMove(delta),
-        dragEnd: (velocity) => this.dragEnd(velocity),
+        dragMove: (point, delta) => this.dragMove(point, delta),
+        dragEnd: (velocity, delta) => this.dragEnd(velocity, delta),
         tap: (action) => {
           if (action === 'next') this.next();
           else if (action === 'prev') this.prev();
@@ -771,6 +784,7 @@ class Engine implements ReaderEngine {
       under,
       corner,
       base,
+      grab: null,
       point: { ...base },
       animation: null,
       heading: null,
@@ -790,14 +804,17 @@ class Engine implements ReaderEngine {
 
   private dragStart(direction: Direction, start: Point): void {
     this.finishTurnNow();
-    this.beginTurn(direction, anchorCorner(start.y, this.height));
+    const turn = this.beginTurn(direction, anchorCorner(start.y, this.height));
+    if (turn) turn.grab = { ...start };
   }
 
-  private dragMove(delta: Point): void {
+  private dragMove(point: Point, delta: Point): void {
     const turn = this.turn;
     if (!turn || turn.animation) return;
     if (turn.style === 'curl') {
-      turn.point = dragPoint(this.size(), turn.corner, turn.direction, turn.base, delta);
+      turn.point = turn.grab
+        ? followPoint(this.size(), turn.corner, turn.direction, turn.grab, point)
+        : dragPoint(this.size(), turn.corner, turn.direction, turn.base, delta);
     } else {
       const raw = turn.base.x + delta.x;
       const x =
@@ -807,20 +824,24 @@ class Engine implements ReaderEngine {
     this.renderTurn(turn);
   }
 
-  private dragEnd(velocity: Point): void {
+  private dragEnd(velocity: Point, delta: Point): void {
     const turn = this.turn;
     if (!turn) return;
     const w = this.width;
+    const along = turn.direction === 'forward' ? -velocity.x : velocity.x;
     let travel: number;
-    let along: number;
-    if (turn.style === 'curl') {
+    let turned = 0;
+    if (turn.style === 'curl' && turn.grab) {
+      // Lo que cuenta es el dedo, no P: al agarrar en medio el pliegue se adelanta al alcanzarlo.
+      travel = turn.direction === 'forward' ? -delta.x : delta.x;
+      const progress = turnProgress(this.size(), turn.point.x);
+      turned = turn.direction === 'forward' ? progress : 1 - progress;
+    } else if (turn.style === 'curl') {
       travel = turn.direction === 'forward' ? w - turn.point.x : (turn.point.x + w) / 2;
-      along = turn.direction === 'forward' ? -velocity.x : velocity.x;
     } else {
       travel = Math.abs(turn.point.x);
-      along = turn.direction === 'forward' ? -velocity.x : velocity.x;
     }
-    const complete = shouldCompleteTurn(travel, along, w);
+    const complete = shouldCompleteTurn(travel, along, w, turned);
     this.settle(turn, complete, { x: velocity.x * 1000, y: velocity.y * 1000 });
   }
 
@@ -836,7 +857,8 @@ class Engine implements ReaderEngine {
       const out = turn.direction === 'forward' ? -size.width : size.width;
       target = { x: complete ? out : 0, y: 0 };
     }
-    const factor = turn.style === 'curl' && turn.direction === 'backward' ? 2 : 1;
+    // Velocidad de P por px/s del dedo: con el pliegue bajo el dedo (o hacia atrás), P va al doble.
+    const factor = turn.style === 'curl' && (turn.grab || turn.direction === 'backward') ? 2 : 1;
     turn.heading = complete ? 'complete' : 'cancel';
     const animation = animateSpring2D(
       turn.point,
@@ -889,6 +911,7 @@ class Engine implements ReaderEngine {
     turn.animation = null;
     turn.heading = null;
     turn.base = { ...turn.point };
+    turn.grab = null;
     return true;
   }
 
@@ -1066,8 +1089,8 @@ function affectsLayout(a: ReaderPreferences, b: ReaderPreferences): boolean {
     a.bold !== b.bold ||
     a.codeWrap !== b.codeWrap ||
     a.codeScale !== b.codeScale ||
-    // El tema "Negrita" cambia el peso del texto.
-    (a.theme === 'negrita') !== (b.theme === 'negrita')
+    // Los temas "Negrita" (peso del texto) y "Dev" (fuente pixel) repaginan.
+    themeLayout(a.theme) !== themeLayout(b.theme)
   );
 }
 

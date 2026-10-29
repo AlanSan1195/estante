@@ -208,3 +208,102 @@
   --glass-border: rgb(255 240 210 / 0.12);
   --selection: rgb(240 160 80 / 0.3);
 }
+
+/* ---------------- Dev ---------------- */
+/*
+ * Estética de editor/terminal con la fuente pixel Geist Pixel Square (public/fontmidUX.woff2).
+ * El motor la pone como --font-body (typography.ts) y repagina al entrar o salir del tema.
+ * Solo trae Regular: los títulos van a 400 y se distinguen por color y tamaño, no por negrita
+ * sintética. Cambiar algo de aquí que afecte medidas exige subir LAYOUT_VERSION en engine.ts.
+ */
+@font-face {
+  font-family: "Geist Pixel Square";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fontmidUX.woff2") format("woff2");
+}
+
+.reader[data-theme="dev"] {
+  --weight-body: 400;
+}
+.reader[data-theme="dev"][data-mode="light"] {
+  --page-bg: #f4f6f1;
+  --ink: #1e2621;
+  --ink-soft: #5f6b63;
+  --accent: #127a46;
+  --rule: rgb(18 122 70 / 0.18);
+  --code-bg: #e8ece4;
+  --paper-back: #e4e9e0;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect width='1' height='1' fill='%23127a46' fill-opacity='0.16'/%3E%3C/svg%3E");
+  --glass-bg: rgb(236 240 233 / 0.78);
+  --glass-strong: rgb(226 231 222 / 0.92);
+  --glass-ink: #1e2621;
+  --glass-border: rgb(255 255 255 / 0.6);
+  --selection: rgb(18 122 70 / 0.2);
+}
+.reader[data-theme="dev"][data-mode="dark"] {
+  --page-bg: #0d1110;
+  --ink: #d3dbd5;
+  --ink-soft: #7f8c84;
+  --accent: #5ee08f;
+  --rule: rgb(94 224 143 / 0.16);
+  --code-bg: #141a17;
+  --paper-back: #1b2320;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect width='1' height='1' fill='%235ee08f' fill-opacity='0.1'/%3E%3C/svg%3E");
+  --glass-bg: rgb(22 29 26 / 0.72);
+  --glass-strong: rgb(30 38 34 / 0.92);
+  --glass-ink: #e2eae4;
+  --glass-border: rgb(94 224 143 / 0.16);
+  --selection: rgb(94 224 143 / 0.26);
+}
+
+/* Cabecera de capítulo como comentario y título de Markdown: "// Capítulo 2" y "# Título". */
+.reader[data-theme="dev"] .ch-label {
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+.reader[data-theme="dev"] .ch-label::before {
+  content: "// ";
+  color: var(--ink-soft);
+}
+.reader[data-theme="dev"] .ch-title::before {
+  content: "# ";
+  color: var(--accent);
+}
+.reader[data-theme="dev"] .ch-title,
+.reader[data-theme="dev"] .b-h {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.reader[data-theme="dev"] .b-h-num,
+.reader[data-theme="dev"] .b-callout-label,
+.reader[data-theme="dev"] .b-code-lang,
+.reader[data-theme="dev"] .b-table th {
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+.reader[data-theme="dev"] .chapter strong {
+  color: color-mix(in srgb, var(--ink) 78%, var(--accent));
+}
+.reader[data-theme="dev"] .chapter a.ext,
+.reader[data-theme="dev"] .chapter a.xref {
+  border-bottom-style: dashed;
+}
+.reader[data-theme="dev"] .b-list li::marker {
+  color: var(--accent);
+}
+.reader[data-theme="dev"] .b-quote {
+  font-style: normal;
+  color: var(--ink-soft);
+}
+
+/* Esquinas casi rectas, como paneles de un editor. */
+.reader[data-theme="dev"] .b-callout,
+.reader[data-theme="dev"] .b-code,
+.reader[data-theme="dev"] .b-diagram,
+.reader[data-theme="dev"] .chapter code.c,
+.reader[data-theme="dev"] .chapter .ref {
+  border-radius: 0.2em;
+}

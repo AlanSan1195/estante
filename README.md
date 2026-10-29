@@ -132,7 +132,7 @@ src/
 
 - **Paginación:** cada capítulo se dibuja con CSS multi-column (una columna = una página) y la página i se muestra con `translate3d(−i·W)`. Medir los fragmentos de cada bloque da el mapa bloque ↔ página, así que cambiar la letra o rotar el teléfono conserva la ubicación.
 - **Curl:** pliegue plano sobre la mediatriz entre la esquina y el dedo, con `clip-path` y una matriz de reflexión; la solapa es la página espejada y tenue. Solo cambian `clip-path`, `transform` y opacidad por cuadro: React no participa.
-- **Gestos:** arrastre desde el 18 % de cada borde, toque en los laterales para pasar página y en el centro para los controles. Código y tablas se amplían con su botón ⤢. Los diagramas, con un toque.
+- **Gestos:** arrastre desde cualquier punto de la página (izquierda avanza, derecha retrocede), toque en los laterales para pasar página y en el centro para los controles. Código y tablas se amplían con su botón ⤢. Los diagramas, con un toque.
 - **Páginas globales ("259 de 1420"):** se cuentan en segundo plano y se guardan en IndexedDB por tipografía y tamaño de pantalla.
 
 ## Estante y estudio
