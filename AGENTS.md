@@ -8,6 +8,10 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
+## Generating a book
+
+To write the study book (`projects/INFO_PROYECT_<NAME>.md`) for a project, follow `docs/generar-libro.md` exactly. The format contract is `docs/formato-libro.md`. In Claude Code this is the `/libro` skill.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build

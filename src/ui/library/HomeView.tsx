@@ -117,7 +117,9 @@ function InstallRow() {
   useEffect(() => setPlatform(installPlatform(currentEnvironment())), []);
 
   if (!platform || platform === 'standalone' || installed) return null;
-  if (platform === 'desktop' && !prompt) return null;
+  // En escritorio la tarjeta lleva al teléfono (QR); instalar exige HTTPS o localhost.
+  const desktop = platform === 'desktop';
+  if (desktop && !prompt && !window.isSecureContext) return null;
   return (
     <button
       type="button"
@@ -127,8 +129,12 @@ function InstallRow() {
     >
       <img src="/icons/icon-192.png" alt="" width={46} height={46} />
       <div>
-        <strong>Añadir a pantalla de inicio</strong>
-        <span>Ábrela como app, a pantalla completa y sin conexión.</span>
+        <strong>{desktop ? 'Ábrela en tu teléfono' : 'Añadir a pantalla de inicio'}</strong>
+        <span>
+          {desktop
+            ? 'Escanea el código y añádela a la pantalla de inicio.'
+            : 'Ábrela como app, a pantalla completa y sin conexión.'}
+        </span>
       </div>
     </button>
   );

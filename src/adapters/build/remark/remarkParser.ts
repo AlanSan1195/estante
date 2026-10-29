@@ -59,6 +59,8 @@ const INTRO_ID = 'introduccion';
 const CHAPTER_NUMBER = /^\s*(\d+)\.\s+/;
 const SECTION_NUMBER = /^\s*(\d+(?:\.\d+)+)\.?\s+|^\s*(\d+)\.\s+/;
 const QUESTION = /^\s*(\d+)\.\s+([\s\S]*\?)\s*$/;
+const QUOTED_QUESTION = /^\s*["“][\s\S]+["”]\s*$/;
+const QUESTIONS_HEADING = /pregunta/i;
 
 interface ChapterDraft {
   number: number | null;
@@ -91,6 +93,9 @@ interface ChapterContext {
   sections: Section[];
   lastHeadingText: string;
   sectionTitle: string | null;
+  chapterTitle: string;
+  /** Preguntas sin número (`**"¿…?"**`) vistas en la sección actual: numeran las siguientes. */
+  quotedQuestions: number;
   /** Dentro de la sección de índice manual: las listas de anclas se descartan. */
   inToc: boolean;
 }
@@ -189,11 +194,13 @@ function readFrontmatter(tree: Root): Record<string, unknown> {
   }
 }
 
+/** Separa "Proyecto: subtítulo" o "Proyecto — subtítulo" por el primer separador. */
 function splitTitle(raw: string): [string, string | null] {
-  const index = raw.indexOf(':');
-  if (index <= 0) return [raw.trim(), null];
+  const separator = raw.match(/:|\s[—–]\s/);
+  const index = separator?.index ?? -1;
+  if (!separator || index <= 0) return [raw.trim(), null];
   const title = raw.slice(0, index).trim();
-  const subtitle = raw.slice(index + 1).trim();
+  const subtitle = raw.slice(index + separator[0].length).trim();
   return [title, subtitle ? capitalize(subtitle) : null];
 }
 
@@ -297,6 +304,15 @@ function stripPrefix(nodes: Inline[], pattern: RegExp): Inline[] {
   return value ? [{ type: 'text', value }, ...rest] : rest;
 }
 
+/** Quita las comillas que envuelven un texto en línea: `"¿Pregunta?"` → `¿Pregunta?`. */
+function unquote(nodes: Inline[]): Inline[] {
+  const out = stripPrefix(nodes, /^\s*["“]/);
+  const last = out.at(-1);
+  if (last?.type !== 'text') return out;
+  const value = last.value.replace(/["”]\s*$/, '');
+  return value ? [...out.slice(0, -1), { type: 'text', value }] : out.slice(0, -1);
+}
+
 function headLocation(chapterId: string): Location {
   return { chapterId, blockId: `${chapterId}.head`, charOffset: 0 };
 }
@@ -315,6 +331,8 @@ function buildChapter(draft: ChapterDraft, chapterId: string, ctx: ParseContext)
     sections: [],
     lastHeadingText: draft.title,
     sectionTitle: null,
+    chapterTitle: draft.title,
+    quotedQuestions: 0,
     inToc: false,
   };
   const blocks = convertSequence(
@@ -451,6 +469,7 @@ function convertHeading(
     cc.sectionKey = sectionId;
     cc.index = 0;
     cc.sectionTitle = plain;
+    cc.quotedQuestions = 0;
   }
   const id = nextId();
   if (sectionId) cc.sections.push({ id: sectionId, title: plain, number, blockId: id, slug });
@@ -485,6 +504,24 @@ function convertParagraph(
           group: cc.sectionTitle,
           question: stripPrefix(convertInlines(first.children, ctx), /^\s*\d+\.\s+/),
           answer: trimStart(convertInlines(rest, ctx)),
+        },
+      ];
+    }
+
+    // Pregunta de entrevista sin número, en una sección de preguntas: **"¿Pregunta?"** Respuesta
+    const inQuestions =
+      QUESTIONS_HEADING.test(cc.sectionTitle ?? '') || QUESTIONS_HEADING.test(cc.chapterTitle);
+    const answer =
+      inQuestions && QUOTED_QUESTION.test(label) ? trimStart(convertInlines(rest, ctx)) : [];
+    if (inlineText(answer).trim() !== '') {
+      return [
+        {
+          kind: 'question',
+          id: nextId(),
+          number: ++cc.quotedQuestions,
+          group: cc.sectionTitle,
+          question: unquote(convertInlines(first.children, ctx)),
+          answer,
         },
       ];
     }
@@ -732,8 +769,9 @@ function isAnchorList(node: List): boolean {
   );
 }
 
+/** El guion es texto plano entre comillas; `**“¿Pregunta?”** respuesta` no lo es. */
 function startsQuote(node: Paragraph): boolean {
-  return /^\s*“/.test(mdToString(node));
+  return node.children[0]?.type === 'text' && /^\s*“/.test(mdToString(node));
 }
 
 function endsQuote(node: Paragraph): boolean {

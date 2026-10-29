@@ -4,7 +4,44 @@ Biblioteca personal de estudio: cada proyecto que construyes se convierte en un 
 
 La fuente de cada libro es un único Markdown, `INFO_PROYECT_<NOMBRE>.md`. La app no inventa contenido: el orden y el texto del MD son la autoridad. El build lo estructura en capítulos, secciones, glosario y banco de preguntas, y lo publica como archivos estáticos.
 
+## Usa tu propio Estante
+
+Estante es personal: cada quien tiene su copia, sus libros y su despliegue. No hay servidor ni cuentas. La IA que escribe los libros la pone y la paga quien la usa.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAlanSan1195%2Festante&project-name=estante&repository-name=estante) [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/AlanSan1195/estante)
+
+1. **Despliega:** pulsa uno de los botones. Los dos copian este repo en tu cuenta de GitHub y publican el sitio con HTTPS. Cada `git push` vuelve a publicar.
+2. **Prepara tu copia en local:**
+
+   ```bash
+   git clone https://github.com/<tu-usuario>/estante && cd estante && bun install
+   ```
+
+   ```bash
+   bunx playwright install chromium
+   ```
+
+   Chromium se usa para renderizar diagramas Mermaid y para las pruebas e2e.
+3. **Cambia los libros:** borra los míos de `projects/` (o déjalos de ejemplo) y genera los tuyos con tu agente (ver [Añadir un libro](#añadir-un-libro)).
+4. **Publica:** haz push. Abre tu URL en la computadora y, en Inicio, toca **Ábrela en tu teléfono**: escanea el QR y añádela a la pantalla de inicio ([Instalar en el teléfono](#instalar-en-el-teléfono)).
+
+Para traer las mejoras de la app, conecta este repo como `upstream`:
+
+```bash
+git remote add upstream https://github.com/AlanSan1195/estante
+```
+
+```bash
+git pull upstream main
+```
+
+Con las mejoras también llegan mis libros nuevos de `projects/`. Bórralos si no los quieres.
+
 ## Añadir un libro
+
+**Con un agente (recomendado).** En Claude Code, desde la raíz de este repo, usa `/libro ../mi-proyecto` (o la URL de un repo). El agente lee el código, escribe `projects/INFO_PROYECT_<NOMBRE>.md` con el formato correcto, lo valida y te pregunta antes de hacer commit. Con otros agentes (Codex…), pídele que siga [`docs/generar-libro.md`](docs/generar-libro.md).
+
+**A mano:**
 
 1. Copia el MD a `projects/`, por ejemplo `projects/INFO_PROYECT_TWICK.md`. También vale una subcarpeta por proyecto, y nombres con espacios o con la copia de Finder (`INFO_PROYECT_TWICK 2.md` → slug `twick-2`).
 2. Opcional: añade una portada `projects/<slug>.cover.jpg` (o `.png` / `.webp`). Si no la hay, se genera una portada SVG.
@@ -26,21 +63,12 @@ Con `bun run dev` corriendo, guardar el MD recompila el libro y recarga el naveg
 
 ## Qué entiende el parser
 
-| En el MD | En el libro |
-|---|---|
-| `# Título: subtítulo` | Título y subtítulo del libro |
-| Texto previo al primer `##` + `## Índice…` | Capítulo "Introducción". Solo se descarta la lista de enlaces del índice manual, que se usa para validar. |
-| `## N. Título` / `### N.M Título` | Capítulos numerados y secciones. Si no hay numeración, cada `##` es un capítulo. |
-| `**Interpretación técnica:**`, `**Por verificar:**`, `**Límite real:**`, `**Matiz…:**`… | Callouts con tono. El diccionario está en `src/adapters/build/remark/rules.ts`. |
-| `> …` y `> [!WARNING]` | Callout de aviso |
-| Bloques de código | Resaltado con Shiki, tema claro/oscuro por CSS |
-| ```` ```mermaid ```` | SVG claro y oscuro renderizado en build y cacheado en `.estante-cache/diagrams` (versionado) |
-| `[x](/ruta/absoluta/archivo.ts:15)` | Chip `src/archivo.ts:15`, relativo a la raíz del proyecto |
-| `[x](#ancla)` | Enlace interno al capítulo o sección |
-| `**12. ¿Pregunta?** Respuesta` | Pregunta del banco de práctica |
-| Tabla bajo un encabezado con "Glosario" | Glosario; cada término se marca en su primera aparición por capítulo |
-| `- [ ] …` | Checklist interactivo |
-| Párrafos entre “comillas” | Guion para decir en voz alta |
+El formato completo, con una plantilla, está en [`docs/formato-libro.md`](docs/formato-libro.md). Lo esencial:
+- `## N. Título` son capítulos y `### N.M` secciones.
+- Las etiquetas en negrita (`**Implementado:**`, `**Por verificar:**`…) son callouts.
+- `[x](src/archivo.ts:15)` es una referencia a archivo.
+- Una tabla bajo "Glosario" es el glosario.
+- `**N. ¿Pregunta?** Respuesta` es el banco de preguntas de Práctica.
 
 ## Comandos
 
@@ -136,24 +164,29 @@ Cambios previstos que solo exigen **un adaptador nuevo**:
   - Hay una franja de 20 px en el borde izquierdo sin arrastre, para no pelear con el gesto "atrás".
 - **Android/Chrome:** botón "Instalar Estante", que usa `beforeinstallprompt`.
 
-## Publicar en Vercel
+## Publicar (Vercel o Netlify)
 
-`vercel.json` ya trae lo necesario:
-- build estático con Bun;
+Instalar la app y leer sin conexión exige **HTTPS**, así que hace falta un hosting. Los botones de [Usa tu propio Estante](#usa-tu-propio-estante) hacen todo en un paso. También puedes importar el repo a mano en [vercel.com/new](https://vercel.com/new) o en Netlify.
+
+| Host | Configuración en el repo | Notas |
+|---|---|---|
+| Vercel | `vercel.json` | Detecta Astro y usa Bun. Toma Node 24 de `engines`. |
+| Netlify | `netlify.toml` + `public/_headers` | Usa Bun 1.3.14 y Node 24 (`BUN_VERSION`, `NODE_VERSION`). |
+| Cloudflare Pages | `public/_headers` | No tiene botón: conecta el repo en su panel, con comando `bun run build` y salida `dist`. |
+| GitHub Pages | — | No funciona tal cual: el sitio viviría en `/estante/` y la app usa rutas absolutas. |
+
+En todos los hosts las cabeceras son las mismas:
 - `sw.js` sin caché y con `Service-Worker-Allowed`;
 - `/_astro/*` inmutable y `/books/*` con caché corta;
 - `noindex` para que no aparezca en buscadores, que también está en el `<meta>` y en `robots.txt`.
 
-1. Crea un repositorio en GitHub y sube el proyecto. `.estante-cache/` (diagramas ya renderizados) debe subirse: así el build no necesita un navegador.
-2. En [vercel.com/new](https://vercel.com/new), importa el repositorio. Vercel detecta Astro y usa `bun install` y `bun run build` de `vercel.json`. No hay variables de entorno.
-3. En *Settings → General → Node.js Version*, elige 24.x (`engines` pide ≥ 22.23).
-4. Despliega. Cada `git push` a `main` publica otra vez. Para añadir un libro, sube su MD a `projects/` y haz push. Si el MD trae diagramas Mermaid nuevos, ejecuta antes `bun run build` en tu Mac y sube también lo nuevo de `.estante-cache/`: Vercel no tiene navegador para renderizarlos, y sin la caché esos diagramas se mostrarían como código.
+Cada `git push` a `main` vuelve a publicar. Si un libro trae diagramas Mermaid nuevos, ejecuta antes `bun run build` en tu computadora y sube también lo nuevo de `.estante-cache/`. Los hosts no tienen navegador para renderizarlos, y sin la caché esos diagramas se verían como código. `/libro` ya lo hace por ti.
 
-El sitio no aparece en buscadores, pero lo puede abrir cualquiera que tenga la URL. Si quieres que sea privado, pon delante Vercel Deployment Protection o Cloudflare Access.
+El sitio no aparece en buscadores, pero lo puede abrir cualquiera que tenga la URL. Si quieres que sea privado, pon delante la protección de tu host o Cloudflare Access.
 
 ## Instalar en el teléfono
 
-La instalación y la lectura sin conexión necesitan **HTTPS**, así que hazlas con la URL de Vercel. Por la red local (`http://192.168…`) el lector funciona, pero el navegador no registra el service worker.
+La instalación y la lectura sin conexión necesitan **HTTPS**, así que hazlas con la URL de tu despliegue. Por la red local (`http://192.168…`) el lector funciona, pero el navegador no registra el service worker. Para no teclear la URL en el teléfono, ábrela en la computadora: Inicio muestra **Ábrela en tu teléfono** con un QR.
 
 - **iPhone / iPad (Safari):**
   1. Abre la URL.

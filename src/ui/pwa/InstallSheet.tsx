@@ -3,22 +3,38 @@ import { InstallIcon, MoreIcon, PlusSquareIcon, ShareIcon } from '../glass/icons
 import { Sheet } from '../reader/Sheet';
 import type { InstallPlatform } from './platform';
 import { usePwa } from './pwaStore';
+import { QrCode } from './QrCode';
 
-/** Hoja "Añadir a pantalla de inicio": pasos ilustrados en iOS y botón nativo en Chrome/Android. */
+/**
+ * Hoja "Añadir a pantalla de inicio": pasos ilustrados en iOS, botón nativo en Chrome/Android y,
+ * en escritorio, un QR para abrir la app en el teléfono e instalarla allí.
+ */
 export function InstallSheet({ platform }: { platform: InstallPlatform }) {
   const close = usePwa((s) => s.closeInstallSheet);
   const prompt = usePwa((s) => s.installPrompt);
   const promptInstall = usePwa((s) => s.promptInstall);
+  const desktop = platform === 'desktop';
 
   return (
     <div className="pwa-overlay">
       <Sheet
-        title="Añadir a pantalla de inicio"
+        title={desktop ? 'Ábrela en tu teléfono' : 'Añadir a pantalla de inicio'}
         subtitle="Estante se abre como una app: a pantalla completa y sin conexión"
         testId="install-sheet"
         onClose={close}
       >
         <div className="pwa-install">
+          {desktop ? (
+            <div className="pwa-qr-block" data-testid="install-phone">
+              <QrCode value={window.location.origin} />
+              <p className="pwa-note">
+                Escanéalo con la cámara. En iPhone, abre la página en Safari y toca{' '}
+                <strong>Compartir → Añadir a pantalla de inicio</strong>. En Android, abre en Chrome
+                y toca <strong>Instalar aplicación</strong>.
+              </p>
+            </div>
+          ) : null}
+
           {prompt ? (
             <button
               type="button"
@@ -58,10 +74,11 @@ export function InstallSheet({ platform }: { platform: InstallPlatform }) {
             </ol>
           ) : null}
 
-          {platform === 'desktop' && !prompt ? (
+          {desktop && !prompt ? (
             <p className="pwa-note">
-              En Chrome o Edge usa el botón de instalar de la barra de direcciones. En Safari para
-              Mac: <strong>Archivo → Añadir al Dock</strong>.
+              Para instalarla también en esta computadora: en Chrome o Edge, el botón de instalar de
+              la barra de direcciones; en Safari para Mac, <strong>Archivo → Añadir al Dock</strong>
+              .
             </p>
           ) : null}
 

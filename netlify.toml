@@ -1,0 +1,8 @@
+# Despliegue en Netlify. Las cabeceras están en public/_headers.
+[build]
+  command = "bun install --frozen-lockfile && bun run build"
+  publish = "dist"
+
+[build.environment]
+  BUN_VERSION = "1.3.14"
+  NODE_VERSION = "24"

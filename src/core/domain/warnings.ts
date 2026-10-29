@@ -8,7 +8,9 @@ export type WarningCode =
   | 'duplicate-title'
   | 'duplicate-slug'
   | 'empty-book'
-  | 'no-title';
+  | 'no-title'
+  | 'no-questions'
+  | 'no-glossary';
 
 export interface BuildWarning {
   code: WarningCode;

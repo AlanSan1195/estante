@@ -94,6 +94,22 @@
   opacity: 0.72;
 }
 
+/* Escritorio: QR para abrir la app en el teléfono. */
+.pwa-qr-block {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.pwa-qr {
+  display: block;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 0 rgb(0 0 0 / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.12);
+}
+
 /* Ilustraciones: maquetas mínimas de Safari, del menú y de la pantalla de inicio. */
 .pwa-art-bar {
   display: flex;

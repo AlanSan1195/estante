@@ -1,4 +1,11 @@
-import { type Book, blockInlines, walkBlocks, walkInlines } from '../domain/book';
+import {
+  type Book,
+  blockInlines,
+  collectGlossary,
+  collectQuestions,
+  walkBlocks,
+  walkInlines,
+} from '../domain/book';
 import { type BuildWarning, warning } from '../domain/warnings';
 
 /** Comprobaciones de estructura que no dependen de adaptadores. */
@@ -70,6 +77,26 @@ export function validateBook(book: Book): BuildWarning[] {
         });
       }
     });
+  }
+
+  // Funciones de estudio que el libro no aprovecha (ver docs/formato-libro.md).
+  if (collectQuestions(book).length === 0) {
+    warnings.push(
+      warning(
+        'no-questions',
+        slug,
+        'Sin banco de preguntas (**N. ¿…?** respuesta): Práctica no tendrá tarjetas de este libro.',
+      ),
+    );
+  }
+  if (collectGlossary(book).length === 0) {
+    warnings.push(
+      warning(
+        'no-glossary',
+        slug,
+        'Sin glosario (tabla bajo un encabezado "Glosario"): los términos no tendrán definición al tocarlos.',
+      ),
+    );
   }
 
   return warnings;
