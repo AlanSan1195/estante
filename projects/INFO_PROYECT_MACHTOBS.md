@@ -1,3 +1,7 @@
+---
+color: "#0a0a0b"
+---
+
 # Machtobs — Explicación técnica y guía de entrevista
 
 > Documento preparado para que puedas explicar tu proyecto en una entrevista técnica. Explica qué es, qué arquitectura tiene, cómo funciona cada pieza, y qué conceptos conviene estudiar porque un entrevistador probablemente te pregunte por ellos.

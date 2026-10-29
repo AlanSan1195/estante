@@ -29,12 +29,14 @@ const { title, cover, background } = Astro.props;
     <div slot="fallback" class="reader-fallback" aria-label="Cargando libro"></div>
   </Reader>
   {/*
-    Portada de apertura, a pantalla completa sobre el color del libro: al abrir desde el estante, la
-    portada crece hasta aquí (ui/bookTransition.ts) y esto se funde con la página cuando el lector
-    está listo. También hace de pantalla de carga si se entra directamente a /leer/<slug>.
+    Portada de apertura, a pantalla completa: al abrir desde el estante, la portada crece hasta aquí
+    (ui/bookTransition.ts) y esto se funde con la página cuando el lector está listo. También hace
+    de pantalla de carga si se entra directamente a /leer/<slug>. Detrás va la misma portada,
+    ampliada y desenfocada, para que en ninguna proporción de pantalla queden bandas vacías.
   */}
   <div class="reader-intro" style={{ background }} aria-hidden="true">
-    <img src={cover} alt="" width="400" height="600" decoding="async" />
+    <img class="reader-intro-backdrop" src={cover} alt="" width="400" height="600" decoding="async" />
+    <img class="reader-intro-cover" src={cover} alt="" width="400" height="600" decoding="async" />
   </div>
 </AppLayout>
 
@@ -49,6 +51,7 @@ const { title, cover, background } = Astro.props;
     position: fixed;
     z-index: 60;
     inset: 0;
+    overflow: hidden;
     pointer-events: none;
     transition:
       opacity 0.28s var(--ease-out),
@@ -56,10 +59,22 @@ const { title, cover, background } = Astro.props;
   }
 
   .reader-intro img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  .reader-intro-backdrop {
+    object-fit: cover;
+    transform: scale(1.25);
+    filter: blur(40px) saturate(1.15) brightness(0.6);
+  }
+
+  .reader-intro-cover {
     object-fit: contain;
+    filter: drop-shadow(0 24px 48px rgb(0 0 0 / 0.45));
   }
 
   /* Se funde cuando el lector está listo, pero no mientras la portada aún está creciendo. */

@@ -44,7 +44,7 @@ Con las mejoras también llegan mis libros nuevos de `projects/`. Bórralos si n
 **A mano:**
 
 1. Copia el MD a `projects/`, por ejemplo `projects/INFO_PROYECT_TWICK.md`. También vale una subcarpeta por proyecto, y nombres con espacios o con la copia de Finder (`INFO_PROYECT_TWICK 2.md` → slug `twick-2`).
-2. Opcional: añade una portada `projects/<slug>.cover.jpg` (o `.png` / `.webp`). Si no la hay, se genera una portada SVG.
+2. Opcional: añade una portada `projects/<slug>.cover.jpg` (o `.png` / `.webp` / `.svg`). Si no la hay, se genera una portada SVG.
 3. Opcional: añade un frontmatter YAML para ajustar metadatos:
 
    ```yaml

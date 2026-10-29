@@ -5,7 +5,7 @@ import type { ProjectSource, SourceDocument } from '../../core/ports/ProjectSour
 
 /** `INFO_PROYECT_TWICK.md`, `INFO_PROYECT_TWICK 2.md`, `info_project_mi-app.md`… */
 const SOURCE_FILE = /^INFO_PRO[YJ]ECT_(.+)\.md$/i;
-const COVER_EXTENSIONS = ['jpg', 'png', 'webp'] as const;
+const COVER_EXTENSIONS = ['jpg', 'png', 'webp', 'svg'] as const;
 
 /** Slug del libro a partir del nombre del archivo: "TWICK 2" → "twick-2". */
 export function slugFromFileName(fileName: string): string | null {
@@ -20,7 +20,7 @@ export function slugFromFileName(fileName: string): string | null {
 
 /**
  * Lee los MD de `projects/`. Acepta archivos sueltos y una subcarpeta por proyecto.
- * Portada opcional: `<slug>.cover.(jpg|png|webp)` junto al MD.
+ * Portada opcional: `<slug>.cover.(jpg|png|webp|svg)` junto al MD.
  */
 export function createFsProjectSource(projectsDir: string): ProjectSource {
   return {

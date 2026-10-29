@@ -1,3 +1,7 @@
+---
+color: "#070908"
+---
+
 # Twick: libro de estudio para defender tu proyecto en una entrevista técnica
 
 Esta guía te enseña a explicar **qué construiste, cómo se conectan sus piezas y qué límites tiene su implementación actual**. Está basada en la lectura del código y la configuración de este repositorio, realizada el 19 de octubre de 2026. Su objetivo es que puedas razonar con el entrevistador, recorrer el código y justificar decisiones con evidencia; memorizar nombres de librerías será solamente una parte de la preparación.
