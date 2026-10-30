@@ -607,6 +607,8 @@ h5.b-h {
 
 .b-table th {
   text-align: left;
+  hyphens: manual;
+  -webkit-hyphens: manual;
   font-family: var(--font-ui);
   font-size: 0.78em;
   font-weight: 650;
@@ -627,6 +629,17 @@ h5.b-h {
   break-inside: avoid;
 }
 
+/* El botón ⤢ va arriba a la derecha: la cabecera le deja sitio para no taparse. */
+.b-table thead th:last-child {
+  padding-right: 40px;
+}
+
+/* La primera columna suele ser el término: se corta entre palabras, nunca en sílabas. */
+.b-table td:first-child {
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+
 .b-table td[data-align="right"] {
   text-align: right;
 }
@@ -635,8 +648,60 @@ h5.b-h {
   text-align: center;
 }
 
-/* Con 3 o más columnas y página angosta, cada fila se vuelve una tarjeta. */
+/* Página angosta: 2 columnas con texto largo se apilan; 3 o más se vuelven tarjetas. */
 @container page (max-width: 560px) {
+  .b-table[data-layout="stack"] table,
+  .b-table[data-layout="stack"] thead,
+  .b-table[data-layout="stack"] tbody,
+  .b-table[data-layout="stack"] tr,
+  .b-table[data-layout="stack"] th,
+  .b-table[data-layout="stack"] td {
+    display: block;
+  }
+
+  /* La cabecera pasa a ser una leyenda dentro de la primera fila (data-legend, una etiqueta por
+     línea): la fila no se parte entre páginas, así que la leyenda nunca queda sola al pie.
+     WebKit ignora break-after: avoid en columnas, por eso no basta con dejar el thead. */
+  .b-table[data-layout="stack"] thead {
+    display: none;
+  }
+
+  .b-table[data-layout="stack"] tr[data-legend] {
+    padding-top: 0;
+  }
+
+  .b-table[data-layout="stack"] tr[data-legend]::before {
+    content: attr(data-legend);
+    display: block;
+    margin-bottom: 0.65em;
+    padding: 0.35em 40px 0.5em 0;
+    border-bottom: 1.5px solid var(--rule);
+    white-space: pre-line;
+    font-family: var(--font-ui);
+    font-size: 0.78em;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .b-table[data-layout="stack"] tbody tr {
+    padding: 0.65em 0 0.6em;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .b-table[data-layout="stack"] td {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .b-table[data-layout="stack"] td:first-child {
+    margin-bottom: 0.2em;
+    font-weight: 650;
+  }
+
   .b-table[data-layout="cards"] table,
   .b-table[data-layout="cards"] tbody,
   .b-table[data-layout="cards"] tr,

@@ -1,6 +1,23 @@
 import { type Block, type GlossaryTerm, type Inline, inlineText } from '../../core/domain/book';
 import type { BookRenderer, ChapterRenderContext } from '../../core/ports/BookRenderer';
 
+/** Una celda de 2 columnas con más texto que esto ya no cabe bien al lado de otra en un teléfono. */
+const STACK_CELL_CHARS = 40;
+
+/**
+ * Cómo se acomoda la tabla en una página angosta (el CSS solo lo aplica allí):
+ * - `cards`: 3 o más columnas; cada fila es una tarjeta con etiquetas.
+ * - `stack`: 2 columnas con texto largo; la primera celda queda arriba y la segunda debajo.
+ * - `grid`: tabla normal (pocas columnas y celdas cortas).
+ */
+function tableLayout(block: Extract<Block, { kind: 'table' }>): 'grid' | 'stack' | 'cards' {
+  if (block.header.length >= 3) return 'cards';
+  const long = block.rows.some((row) =>
+    row.some((cell) => inlineText(cell).trim().length > STACK_CELL_CHARS),
+  );
+  return long ? 'stack' : 'grid';
+}
+
 /**
  * Bloques de dominio → fragmento HTML de capítulo.
  *
@@ -9,7 +26,7 @@ import type { BookRenderer, ChapterRenderContext } from '../../core/ports/BookRe
  * - Cada bloque de nivel superior lleva `data-b="<blockId>"` y `data-w="<palabras previas en el capítulo>"`.
  * - La cabecera del capítulo es `header.ch-head` con `data-b="<chapterId>.head"`.
  * - Clases de bloque: b-p, b-h/b-section, b-callout[data-tone], b-code[data-lang], b-diagram,
- *   b-table[data-cols][data-layout=grid|cards] (celdas con data-label), b-list, b-checklist,
+ *   b-table[data-cols][data-layout=grid|stack|cards] (celdas con data-label), b-list, b-checklist,
  *   qa (.qa-q/.qa-n/.qa-a), b-quote, b-divider.
  * - En línea: span.term[data-term], a.xref[data-chapter][data-block], .ref[data-ref], a.ext, code.c.
  */
@@ -82,13 +99,17 @@ class ChapterWriter {
         const cols = block.header.length;
         const labels = block.header.map((cell) => attr(inlineText(cell).trim()));
         const mark = !block.glossary;
+        const layout = tableLayout(block);
+        // Apilada, la cabecera viaja dentro de la primera fila (ver reader.css): así nunca queda sola
+        // al pie de una página.
+        const legend = layout === 'stack' ? ` data-legend="${labels.join('&#10;')}"` : '';
         const head = block.header
           .map((cell, i) => `<th${alignAttr(block.align[i])}>${this.inlines(cell, false)}</th>`)
           .join('');
         const rows = block.rows
           .map(
-            (row) =>
-              `<tr>${row
+            (row, r) =>
+              `<tr${r === 0 ? legend : ''}>${row
                 .map(
                   (cell, i) =>
                     `<td data-label="${labels[i] ?? ''}"${alignAttr(block.align[i])}>${this.inlines(cell, mark)}</td>`,
@@ -97,7 +118,7 @@ class ChapterWriter {
           )
           .join('');
         const glossary = block.glossary ? ' data-glossary="true"' : '';
-        return `<div class="b-table" data-cols="${cols}" data-layout="${cols >= 3 ? 'cards' : 'grid'}"${glossary}${data}><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+        return `<div class="b-table" data-cols="${cols}" data-layout="${layout}"${glossary}${data}><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
       }
       case 'list': {
         const tag = block.ordered ? 'ol' : 'ul';

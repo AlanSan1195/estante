@@ -147,7 +147,7 @@ interface TurnState {
 }
 
 /** Súbelo cuando cambie CSS que afecte la paginación: invalida los conteos guardados. */
-const LAYOUT_VERSION = 'l3';
+const LAYOUT_VERSION = 'l4';
 const CURL_TAP_MS = 560;
 const SLIDE_TAP_MS = 300;
 const CURL_OMEGA = 14;

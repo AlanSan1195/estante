@@ -280,7 +280,8 @@
 .reader[data-theme="dev"] .b-h-num,
 .reader[data-theme="dev"] .b-callout-label,
 .reader[data-theme="dev"] .b-code-lang,
-.reader[data-theme="dev"] .b-table th {
+.reader[data-theme="dev"] .b-table th,
+.reader[data-theme="dev"] .b-table tr[data-legend]::before {
   font-family: var(--font-body);
   font-weight: 400;
 }

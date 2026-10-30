@@ -66,6 +66,19 @@ function hasTextSelection(): boolean {
   return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 }
 
+/**
+ * ¿Puede este dedo empezar a girar la hoja? No si hay texto seleccionado (al apoyarlo o ahora): es
+ * el asa con la que se amplía la selección para subrayar, o el toque que la descarta. Tampoco tras
+ * una pulsación larga, que es el gesto de seleccionar. Ni desde la franja protegida del borde.
+ */
+export function mayStartTurn(input: {
+  guarded: boolean;
+  longPress: boolean;
+  selecting: boolean;
+}): boolean {
+  return !input.guarded && !input.longPress && !input.selecting;
+}
+
 export interface TapInput {
   zone: Zone;
   distance: number;
@@ -153,6 +166,8 @@ interface ActivePointer {
   delegated: boolean;
   /** Empezó en la franja protegida del borde: puede ser toque, nunca arrastre. */
   guarded: boolean;
+  /** Había texto seleccionado al apoyar el dedo: ajusta o descarta la selección, no gira. */
+  selecting: boolean;
   dragging: boolean;
   caught: boolean;
   longPress: boolean;
@@ -217,6 +232,7 @@ export class GestureController {
       zone,
       delegated,
       guarded: isGuardedStart(event.clientX, this.edgeGuard),
+      selecting: hasTextSelection(),
       dragging: caught,
       caught,
       longPress: false,
@@ -241,9 +257,12 @@ export class GestureController {
 
     if (!active.dragging) {
       if (Math.hypot(delta.x, delta.y) > TAP_MAX_MOVEMENT) this.clearLongPress(active);
-      if (active.guarded || Math.abs(delta.x) < DRAG_START_DISTANCE) return;
+      if (Math.abs(delta.x) < DRAG_START_DISTANCE) return;
       if (Math.abs(delta.y) > Math.abs(delta.x) * 1.5) return;
-      if (active.longPress && hasTextSelection()) return;
+      const selecting = active.selecting || hasTextSelection();
+      if (!mayStartTurn({ guarded: active.guarded, longPress: active.longPress, selecting })) {
+        return;
+      }
       const direction = dragDirection(delta.x);
       if (!direction || !this.handlers.canTurn(direction)) return;
       active.dragging = true;
