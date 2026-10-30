@@ -48,6 +48,7 @@ Antes del primer capítulo va un `## Índice de estudio` con un enlace `#ancla` 
 - Las respuestas del banco de preguntas se apoyan en el código y nombran el archivo cuando ayuda.
 - El glosario solo define términos que el libro usa.
 - Si no ejecutaste el proyecto ni sus pruebas, dilo en la introducción.
+- No prometas tamaños ni tiempos fijos en títulos ni en textos: nada de «explicado en una página» o «en cinco minutos». El libro se lee en pantallas muy distintas y la paginación cambia: un capítulo que cabe en una página de escritorio ocupa varias en un iPhone.
 
 ## 4. Validar
 
