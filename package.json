@@ -12,8 +12,6 @@
     "astro": "astro",
     "books:check": "bun scripts/books-check.ts",
     "deploy": "bun scripts/deploy.ts",
-    "test": "bun test tests/core tests/engine",
-    "test:e2e": "playwright test",
     "lint": "biome check .",
     "deps": "depcruise src --config .dependency-cruiser.cjs",
     "check": "astro check && biome check . && depcruise src --config .dependency-cruiser.cjs",

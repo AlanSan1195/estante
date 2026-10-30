@@ -39,3 +39,7 @@ projects/*
 # resultados de pruebas
 test-results/
 playwright-report/
+
+# pruebas: viven solo en tu computadora, no en el repo público
+tests/
+playwright.config.ts
