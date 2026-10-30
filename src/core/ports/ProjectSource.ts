@@ -1,6 +1,6 @@
 /** Un documento fuente tal como llega de la carpeta `projects/` (u otra fuente futura). */
 export interface SourceDocument {
-  /** Slug del libro derivado del nombre del archivo (`INFO_PROYECT_TWICK 2.md` → `twick-2`). */
+  /** Slug del libro derivado del nombre del archivo (`INFO_PROYECT_MI_APP 2.md` → `mi-app-2`). */
   slug: string;
   fileName: string;
   markdown: string;

@@ -1,7 +1,10 @@
-# Despliegue en Netlify. Las cabeceras están en public/_headers.
+# Despliegue en Netlify con `bun run deploy --netlify`: el build se hace en tu computadora
+# (tus libros no están en git) y la CLI sube dist/. Las cabeceras están en public/_headers.
 [build]
   command = "bun install --frozen-lockfile && bun run build"
   publish = "dist"
+  # Sin builds desde git: en el servidor no están tus libros y publicaría solo el tutorial.
+  ignore = "exit 0"
 
 [build.environment]
   BUN_VERSION = "1.3.14"

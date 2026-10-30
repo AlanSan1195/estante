@@ -27,6 +27,15 @@ pnpm-debug.log*
 public/books/
 public/sw-manifest.json
 
+# tu biblioteca es personal: tus MD, portadas y diagramas no viajan con el repo
+projects/*
+!projects/.gitkeep
+.estante-cache/
+
+# despliegue local con las CLI de Vercel y Netlify
+.vercel/
+.netlify/
+
 # resultados de pruebas
 test-results/
 playwright-report/

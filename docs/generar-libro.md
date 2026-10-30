@@ -54,23 +54,16 @@ Antes del primer capítulo va un `## Índice de estudio` con un enlace `#ancla` 
 Desde la raíz de este repo:
 
 1. `bun run books:check --strict`. Corrige el MD hasta que salga sin avisos. Revisa que las estadísticas del libro nuevo muestren preguntas, términos y referencias distintos de 0.
-2. Si el libro tiene diagramas `mermaid`, ejecuta `bun run build`. Así se renderizan en local y quedan en `.estante-cache/diagrams` (Vercel y Netlify no tienen navegador para hacerlo). Requiere `bunx playwright install chromium` una vez.
-3. Muestra al usuario las estadísticas y la lista de archivos nuevos (`git status --short projects .estante-cache`).
+2. Muestra al usuario las estadísticas del libro.
+
+`projects/` y `.estante-cache/` están en `.gitignore`: la biblioteca es personal y **no se versiona**. No hagas `git add` de libros ni de diagramas.
 
 ## 5. Publicar
 
-Pregunta antes de hacer commit y push. Con el visto bueno:
+Pregunta antes de publicar, porque sube la biblioteca al sitio del usuario. Con el visto bueno:
 
 ```bash
-git add projects/INFO_PROYECT_<NOMBRE>.md .estante-cache
+bun run deploy
 ```
 
-```bash
-git commit -m "add: libro <nombre>"
-```
-
-```bash
-git push
-```
-
-El host (Vercel o Netlify) vuelve a publicar en cada push. El libro aparece en la Biblioteca. En el teléfono, toca su nube para tenerlo sin conexión.
+Ese comando hace el build en la computadora, donde están los libros y se renderizan los diagramas (requiere `bunx playwright install chromium` una vez), y lo sube a Vercel. Con `--netlify` lo sube a Netlify. La primera vez, la CLI del host pide al usuario iniciar sesión: eso lo hace el usuario, no el agente. Después, el libro aparece en la Biblioteca. En el teléfono, toca su nube para tenerlo sin conexión.

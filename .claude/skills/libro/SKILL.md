@@ -11,7 +11,8 @@ Sigue al pie de la letra `docs/generar-libro.md` de este repo. Ese archivo es la
 
 Puntos que no se negocian:
 
-- Escribe solo `projects/INFO_PROYECT_<NOMBRE>.md` (y, si hay diagramas, `.estante-cache/diagrams` vía `bun run build`). No toques el código de la app.
+- Escribe solo `projects/INFO_PROYECT_<NOMBRE>.md`. No toques el código de la app.
+- `projects/` es personal y está en `.gitignore`: nunca hagas commit de libros.
 - Copia el código desde los archivos reales. Cada afirmación importante lleva una referencia `ruta:línea` comprobada.
 - Termina con `bun run books:check --strict` sin avisos.
-- Pide confirmación antes de hacer commit o push.
+- Pide confirmación antes de publicar con `bun run deploy`.

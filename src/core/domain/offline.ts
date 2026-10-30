@@ -27,7 +27,7 @@ const ROOT_ASSET =
  * hash, fuentes latinas y las de public/, iconos, manifest, catálogo y portadas. Los capítulos, el
  * manifest y la búsqueda de cada libro no: se descargan por libro desde la Biblioteca.
  *
- * @param files rutas relativas a la carpeta de salida, con `/` (p. ej. `leer/twick/index.html`).
+ * @param files rutas relativas a la carpeta de salida, con `/` (p. ej. `leer/mi-app/index.html`).
  * @returns URLs absolutas del sitio, ordenadas y sin duplicados.
  */
 export function selectPrecache(files: readonly string[]): string[] {

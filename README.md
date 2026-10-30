@@ -6,54 +6,42 @@ La fuente de cada libro es un único Markdown, `INFO_PROYECT_<NOMBRE>.md`. La ap
 
 ## Usa tu propio Estante
 
-Estante es personal: cada quien tiene su copia, sus libros y su despliegue. No hay servidor ni cuentas. La IA que escribe los libros la pone y la paga quien la usa.
+Estante es personal: cada quien tiene sus libros y su despliegue. Este repo trae **solo la app**. Tus libros viven en `projects/`, que está en `.gitignore`: nunca suben a git ni viajan con un fork o un clon. La IA que escribe los libros la pone y la paga quien la usa. Mientras no tengas libros, la app muestra un tutorial ([`examples/`](examples/INFO_PROYECT_ESTANTE.md)).
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAlanSan1195%2Festante&project-name=estante&repository-name=estante) [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/AlanSan1195/estante)
-
-1. **Despliega:** pulsa uno de los botones. Los dos copian este repo en tu cuenta de GitHub y publican el sitio con HTTPS. Cada `git push` vuelve a publicar.
-2. **Prepara tu copia en local:**
+1. **Clona la app e instala:**
 
    ```bash
-   git clone https://github.com/<tu-usuario>/estante && cd estante && bun install
+   git clone https://github.com/AlanSan1195/estante && cd estante && bun install
    ```
 
    ```bash
    bunx playwright install chromium
    ```
 
-   Chromium se usa para renderizar diagramas Mermaid y para las pruebas e2e.
-3. **Cambia los libros:** borra los míos de `projects/` (o déjalos de ejemplo) y genera los tuyos con tu agente (ver [Añadir un libro](#añadir-un-libro)).
-4. **Publica:** haz push. Abre tu URL en la computadora y, en Inicio, toca **Ábrela en tu teléfono**: escanea el QR y añádela a la pantalla de inicio ([Instalar en el teléfono](#instalar-en-el-teléfono)).
+   Chromium se usa para renderizar diagramas Mermaid en tu computadora y para las pruebas e2e.
+2. **Crea tus libros** con tu agente o a mano (ver [Añadir un libro](#añadir-un-libro)). Para leerlos en local, usa `bun run dev`.
+3. **Publica** con `bun run deploy` (Vercel) o `bun run deploy --netlify`. El build se hace en tu computadora, porque ahí están tus libros, y la CLI sube el resultado. La primera vez te pide iniciar sesión y elegir o crear el proyecto (ver [Publicar](#publicar-vercel-o-netlify)).
+4. **Instala en el teléfono:** abre tu URL en la computadora y, en Inicio, toca **Ábrela en tu teléfono**. Escanea el QR y añádela a la pantalla de inicio ([Instalar en el teléfono](#instalar-en-el-teléfono)).
 
-Para traer las mejoras de la app, conecta este repo como `upstream`:
-
-```bash
-git remote add upstream https://github.com/AlanSan1195/estante
-```
-
-```bash
-git pull upstream main
-```
-
-Con las mejoras también llegan mis libros nuevos de `projects/`. Bórralos si no los quieres.
+Para traer las mejoras de la app, haz `git pull`. Nunca hay conflictos con tus libros, porque no están en git. Para respaldarlos, cada MD suele vivir también en el repo de su proyecto. Si quieres, `projects/` puede ser un repo privado propio.
 
 ## Añadir un libro
 
-**Con un agente (recomendado).** En Claude Code, desde la raíz de este repo, usa `/libro ../mi-proyecto` (o la URL de un repo). El agente lee el código, escribe `projects/INFO_PROYECT_<NOMBRE>.md` con el formato correcto, lo valida y te pregunta antes de hacer commit. Con otros agentes (Codex…), pídele que siga [`docs/generar-libro.md`](docs/generar-libro.md).
+**Con un agente (recomendado).** En Claude Code, desde la raíz de este repo, usa `/libro ../mi-proyecto` (o la URL de un repo). El agente lee el código, escribe `projects/INFO_PROYECT_<NOMBRE>.md` con el formato correcto, lo valida y te pregunta antes de publicarlo. Con otros agentes (Codex…), pídele que siga [`docs/generar-libro.md`](docs/generar-libro.md).
 
 **A mano:**
 
-1. Copia el MD a `projects/`, por ejemplo `projects/INFO_PROYECT_TWICK.md`. También vale una subcarpeta por proyecto, y nombres con espacios o con la copia de Finder (`INFO_PROYECT_TWICK 2.md` → slug `twick-2`).
+1. Copia el MD a `projects/`, por ejemplo `projects/INFO_PROYECT_MI_APP.md`. También vale una subcarpeta por proyecto, y nombres con espacios o con la copia de Finder (`INFO_PROYECT_MI_APP 2.md` → slug `mi-app-2`).
 2. Opcional: añade una portada `projects/<slug>.cover.jpg` (o `.png` / `.webp` / `.svg`). Si no la hay, se genera una portada SVG.
 3. Opcional: añade un frontmatter YAML para ajustar metadatos:
 
    ```yaml
    ---
-   title: Twick
+   title: Mi app
    subtitle: Libro de estudio
-   author: Alan Sandoval
+   author: Tu nombre
    color: "#4338ca"        # paleta de la portada
-   repo: usuario/twick     # las referencias a archivos enlazan a GitHub
+   repo: usuario/mi-app    # las referencias a archivos enlazan a GitHub
    branch: main
    root: /ruta/absoluta/al/proyecto   # si la raíz no se detecta sola
    ---
@@ -89,7 +77,7 @@ bun run books:check    # estadísticas y avisos de cada libro, sin escribir nada
 ```
 
 ```bash
-bun test               # núcleo (MD real de Twick como fixture) y motor de lectura
+bun test               # núcleo (libro sintético de fixture) y motor de lectura
 ```
 
 ```bash
@@ -166,21 +154,31 @@ Cambios previstos que solo exigen **un adaptador nuevo**:
 
 ## Publicar (Vercel o Netlify)
 
-Instalar la app y leer sin conexión exige **HTTPS**, así que hace falta un hosting. Los botones de [Usa tu propio Estante](#usa-tu-propio-estante) hacen todo en un paso. También puedes importar el repo a mano en [vercel.com/new](https://vercel.com/new) o en Netlify.
+Instalar la app y leer sin conexión exige **HTTPS**, así que hace falta un hosting. Como tus libros solo están en tu computadora, el build se hace ahí y se sube ya construido con `bun run deploy` (`scripts/deploy.ts`):
 
-| Host | Configuración en el repo | Notas |
-|---|---|---|
-| Vercel | `vercel.json` | Detecta Astro y usa Bun. Toma Node 24 de `engines`. |
-| Netlify | `netlify.toml` + `public/_headers` | Usa Bun 1.3.14 y Node 24 (`BUN_VERSION`, `NODE_VERSION`). |
-| Cloudflare Pages | `public/_headers` | No tiene botón: conecta el repo en su panel, con comando `bun run build` y salida `dist`. |
-| GitHub Pages | — | No funciona tal cual: el sitio viviría en `/estante/` y la app usa rutas absolutas. |
+```bash
+bun run deploy            # Vercel: vercel pull + vercel build --prod + vercel deploy --prebuilt --prod
+```
+
+```bash
+bun run deploy --netlify  # Netlify: bun run build + netlify deploy --prod --no-build --dir dist
+```
+
+- **Primera vez:** la CLI te pide iniciar sesión y elegir o crear el proyecto. El enlace queda en `.vercel/` o `.netlify/`, que están ignorados.
+- **Sin libros:** si `projects/` está vacío, el comando se detiene para no publicar solo el tutorial (`--allow-empty` lo fuerza).
+- **Diagramas:** Mermaid se renderiza en tu computadora con Chromium y se guarda en `.estante-cache/`, que no se versiona.
+- **Sin builds desde git:** `vercel.json` (`git.deploymentEnabled: false`) y `netlify.toml` (`ignore = "exit 0"`) los desactivan. Un push no publica nada, porque en el servidor no están tus libros y saldría solo el tutorial.
+
+| Host | Configuración en el repo |
+|---|---|
+| Vercel | `vercel.json`: Bun, salida `dist`, cabeceras y Node 24 tomado de `engines` |
+| Netlify | `netlify.toml` + `public/_headers` |
+| Otro estático (Cloudflare Pages…) | Sube `dist/` tras `bun run build`. `public/_headers` sirve en Cloudflare. GitHub Pages no funciona tal cual: el sitio viviría en `/estante/` y la app usa rutas absolutas. |
 
 En todos los hosts las cabeceras son las mismas:
 - `sw.js` sin caché y con `Service-Worker-Allowed`;
 - `/_astro/*` inmutable y `/books/*` con caché corta;
 - `noindex` para que no aparezca en buscadores, que también está en el `<meta>` y en `robots.txt`.
-
-Cada `git push` a `main` vuelve a publicar. Si un libro trae diagramas Mermaid nuevos, ejecuta antes `bun run build` en tu computadora y sube también lo nuevo de `.estante-cache/`. Los hosts no tienen navegador para renderizarlos, y sin la caché esos diagramas se verían como código. `/libro` ya lo hace por ti.
 
 El sitio no aparece en buscadores, pero lo puede abrir cualquiera que tenga la URL. Si quieres que sea privado, pon delante la protección de tu host o Cloudflare Access.
 

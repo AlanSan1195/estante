@@ -57,7 +57,7 @@ function looksLikeFile(segment: string): boolean {
 
 /**
  * Raíz del proyecto: prefijo común (por segmentos) de los directorios de todas las rutas.
- * Si un segmento del prefijo coincide con el slug del libro, se corta ahí (p. ej. `…/twick`).
+ * Si un segmento del prefijo coincide con el slug del libro, se corta ahí (p. ej. `…/mi-app`).
  * Si no, se retroceden carpetas contenedoras típicas (`src`, `app`…).
  */
 export function detectProjectRoot(paths: readonly string[], bookSlug: string): string | null {

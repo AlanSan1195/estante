@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { slug as githubSlug } from 'github-slugger';
 import type { ProjectSource, SourceDocument } from '../../core/ports/ProjectSource';
 
-/** `INFO_PROYECT_TWICK.md`, `INFO_PROYECT_TWICK 2.md`, `info_project_mi-app.md`… */
+/** `INFO_PROYECT_MI_APP.md`, `INFO_PROYECT_MI_APP 2.md`, `info_project_otra-app.md`… */
 const SOURCE_FILE = /^INFO_PRO[YJ]ECT_(.+)\.md$/i;
 const COVER_EXTENSIONS = ['jpg', 'png', 'webp', 'svg'] as const;
 
-/** Slug del libro a partir del nombre del archivo: "TWICK 2" → "twick-2". */
+/** Slug del libro a partir del nombre del archivo: "MI_APP 2" → "mi-app-2". */
 export function slugFromFileName(fileName: string): string | null {
   const match = fileName.match(SOURCE_FILE);
   if (!match?.[1]) return null;

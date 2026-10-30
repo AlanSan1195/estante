@@ -107,7 +107,7 @@ export function createRemarkParser(
   options: RemarkParserOptions = {},
 ): DocumentParser {
   const calloutRules = options.calloutRules ?? DEFAULT_CALLOUT_RULES;
-  const defaultAuthor = options.defaultAuthor ?? "Alan Sandoval";
+  const defaultAuthor = options.defaultAuthor ?? "";
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)

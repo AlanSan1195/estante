@@ -124,7 +124,7 @@ async function networkFirst(request) {
   }
 }
 
-/** Busca la página en el shell con y sin barra final (`/leer/twick` ↔ `/leer/twick/`). */
+/** Busca la página en el shell con y sin barra final (`/leer/mi-app` ↔ `/leer/mi-app/`). */
 async function shellPage(pathname) {
   const cache = await caches.open(SHELL);
   const variants = pathname.endsWith('/')
